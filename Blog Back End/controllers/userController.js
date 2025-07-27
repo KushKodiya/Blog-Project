@@ -47,27 +47,19 @@ const registerUser = async (req, res) => {
 const loginUser = async (req, res) => {
     try {
         const { email, password } = req.body;
-        console.log('Login attempt for email:', email);
 
         const user = await User.findOne({ email });
         if (!user) {
-            console.log('User not found for email:', email);
             return res.status(400).json({ error: 'Invalid email or password' });
         }
 
-        console.log('User found:', user.email, 'Role:', user.role);
-
         const isPasswordValid = await bcrypt.compare(password, user.password);
-        console.log('Password valid:', isPasswordValid);
         
         if (!isPasswordValid) {
-            console.log('Invalid password for user:', email);
             return res.status(400).json({ error: 'Invalid email or password' });
         }
 
         const token = jwt.sign({ userId: user._id }, JWT_SECRET, { expiresIn: '7d' });
-
-        console.log('Login successful for user:', email, 'Role:', user.role);
         
         res.json({
             message: 'Login successful',
@@ -81,7 +73,6 @@ const loginUser = async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Login error:', error);
         res.status(500).json({ error: error.message });
     }
 };

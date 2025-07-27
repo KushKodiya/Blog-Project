@@ -36,7 +36,6 @@ function CreateCategory({ user }) {
       toast.success('Category created successfully!');
       setFormData({ name: '', description: '' });
     } catch (error) {
-      console.error('Error creating category:', error);
       toast.error(error.response?.data?.message || 'Failed to create category');
     } finally {
       setIsLoading(false);

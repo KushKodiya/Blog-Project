@@ -11,17 +11,14 @@ function PostDetail({ user }) {
   useEffect(() => {
     const fetchPost = async () => {
       try {
-        // First try to fetch by slug, if that fails try by ID
         let response;
         try {
           response = await axios.get(`http://localhost:8000/api/posts/slug/${slug}`);
         } catch (slugError) {
-          // If slug fails, try treating it as an ID (for backward compatibility)
           response = await axios.get(`http://localhost:8000/api/posts/${slug}`);
         }
         setPost(response.data);
       } catch (error) {
-        console.error('Error fetching post:', error);
         setError('Post not found');
       } finally {
         setIsLoading(false);

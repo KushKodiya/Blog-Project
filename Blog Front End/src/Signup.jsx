@@ -81,7 +81,6 @@ function Signup({ onSignup }) {
           onSignup(response.data.user, response.data.token);
         }
       } catch (error) {
-        console.error('Signup error:', error);
         toast.error(error.response?.data?.error || 'Failed to create account. Please try again.');
       }
     }

@@ -23,7 +23,6 @@ function ManageCategories({ user }) {
       });
       setCategories(response.data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
       toast.error('Failed to load categories');
     } finally {
       setIsLoading(false);
@@ -46,7 +45,6 @@ function ManageCategories({ user }) {
       setShowCreateForm(false);
       fetchCategories();
     } catch (error) {
-      console.error('Error creating category:', error);
       toast.error(error.response?.data?.error || 'Failed to create category');
     }
   };
@@ -65,7 +63,6 @@ function ManageCategories({ user }) {
       setEditingCategory(null);
       fetchCategories();
     } catch (error) {
-      console.error('Error updating category:', error);
       toast.error(error.response?.data?.error || 'Failed to update category');
     }
   };
@@ -82,9 +79,7 @@ function ManageCategories({ user }) {
       toast.success('Category status updated successfully!');
       fetchCategories();
     } catch (error) {
-      console.error('Error toggling category status:', error);
       if (error.response?.status === 400 && error.response?.data?.postCount) {
-        // Category has posts and cannot be deactivated
         toast.error(
           error.response.data.error || 'Cannot deactivate category that has posts',
           {
@@ -162,9 +157,7 @@ function ManageCategories({ user }) {
       toast.success('Category deleted successfully!');
       fetchCategories();
     } catch (error) {
-      console.error('Error deleting category:', error);
       if (error.response?.status === 400 && error.response?.data?.postCount) {
-        // Category has posts and cannot be deleted
         toast.error(
           error.response.data.error || 'Cannot delete category that has posts',
           {

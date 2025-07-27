@@ -5,7 +5,6 @@ const getAllCategories = async (req, res) => {
         const categories = await Category.find({}).sort({ title: 1 });
         res.json(categories);
     } catch (error) {
-        console.error('Error fetching categories:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -15,7 +14,6 @@ const getActiveCategories = async (req, res) => {
         const categories = await Category.find({ isActive: true }).sort({ title: 1 });
         res.json(categories);
     } catch (error) {
-        console.error('Error fetching active categories:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -40,7 +38,6 @@ const createCategory = async (req, res) => {
             category: savedCategory
         });
     } catch (error) {
-        console.error('Error creating category:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -71,7 +68,6 @@ const updateCategory = async (req, res) => {
             category: updatedCategory
         });
     } catch (error) {
-        console.error('Error updating category:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -88,7 +84,6 @@ const deleteCategory = async (req, res) => {
         await Category.findByIdAndDelete(id);
         res.json({ message: 'Category deleted successfully' });
     } catch (error) {
-        console.error('Error deleting category:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -110,7 +105,6 @@ const toggleCategoryStatus = async (req, res) => {
             category: updatedCategory
         });
     } catch (error) {
-        console.error('Error toggling category status:', error);
         res.status(500).json({ error: error.message });
     }
 };

@@ -14,8 +14,8 @@ const {
 } = require('../controllers/postController');
 
 router.get('/', getAllPosts);         
-router.get('/slug/:slug', getPostBySlug);   // New slug route
-router.get('/:id', getPostById);            // Keep ID route for backwards compatibility        
+router.get('/slug/:slug', getPostBySlug);
+router.get('/:id', getPostById);        
 
 router.post('/upload-image', auth, upload.single('image'), uploadImage);
 router.post('/', auth, createPost);

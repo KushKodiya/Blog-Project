@@ -63,7 +63,6 @@ function Login({ onLogin }) {
       
       toast.success('Login successful!');
     } catch (error) {
-      console.error('Login error:', error);
       setErrors({ 
         general: error.response?.data?.error || 'Login failed. Please try again.' 
       });

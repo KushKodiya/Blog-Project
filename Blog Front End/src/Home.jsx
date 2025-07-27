@@ -24,7 +24,6 @@ function Home({ user }) {
       const response = await axios.get('http://localhost:8000/api/categories/active');
       setCategories(response.data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
     }
   };
 
@@ -38,7 +37,6 @@ function Home({ user }) {
       const response = await axios.get(url);
       setPosts(response.data);
     } catch (error) {
-      console.error('Error fetching posts:', error);
       setError('Failed to load posts');
     } finally {
       setIsLoading(false);

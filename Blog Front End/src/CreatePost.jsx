@@ -28,7 +28,6 @@ function CreatePost({ user, onPostCreated }) {
       const response = await axios.get('http://localhost:8000/api/categories/active');
       setCategories(response.data);
     } catch (error) {
-      console.error('Error fetching categories:', error);
     }
   };
 
@@ -73,7 +72,6 @@ function CreatePost({ user, onPostCreated }) {
       });
       return response.data.imageUrl;
     } catch (error) {
-      console.error('Image upload failed:', error);
       throw new Error('Failed to upload image');
     } finally {
       setIsUploading(false);
@@ -143,7 +141,6 @@ function CreatePost({ user, onPostCreated }) {
       navigate('/');
       
     } catch (error) {
-      console.error('Error creating post:', error);
       setErrors({ 
         general: error.response?.data?.error || 'Failed to create post. Please try again.' 
       });

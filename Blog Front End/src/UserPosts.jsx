@@ -23,7 +23,6 @@ function UserPosts({ user }) {
       });
       setPosts(response.data);
     } catch (error) {
-      console.error('Error fetching user posts:', error);
       setError('Failed to load your posts');
     } finally {
       setIsLoading(false);
@@ -104,7 +103,6 @@ function UserPosts({ user }) {
       setPosts(posts.filter(post => post._id !== postId));
       toast.success('Post deleted successfully!');
     } catch (error) {
-      console.error('Error deleting post:', error);
       toast.error('Failed to delete post. Please try again.');
     }
   };

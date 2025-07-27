@@ -146,12 +146,10 @@ const updatePost = async (req, res) => {
             return res.status(403).json({ error: 'Not authorized to update this post' });
         }
 
-        // Update the post fields
         if (title) post.title = title;
         if (body) post.body = body;
         if (img !== undefined) post.img = img;
 
-        // Save the post (this will trigger the pre-save hook to update slug if title changed)
         const updatedPost = await post.save();
         await updatedPost.populate('user', 'firstName lastName email');
         

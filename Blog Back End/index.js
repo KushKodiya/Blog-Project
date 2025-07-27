@@ -21,6 +21,6 @@ app.get('/', (req, res) => {
     res.json({ message: 'Blog API is running!' });
 });
 
-app.listen(port, () => console.log(`Server started on port ${port}`));
+app.listen(port, () => {});
 
 connectToMongoDb('mongodb://127.0.0.1:27017/blog-app');
