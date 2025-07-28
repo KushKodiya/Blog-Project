@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config';
 
 function CreateCategory({ user }) {
   const [formData, setFormData] = useState({
@@ -23,7 +24,7 @@ function CreateCategory({ user }) {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.post(
-        'http://localhost:8000/api/admin/categories',
+        `${API_BASE_URL}/api/categories`,
         formData,
         {
           headers: {

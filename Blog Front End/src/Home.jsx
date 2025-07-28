@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 
 function Home({ user }) {
   const [posts, setPosts] = useState([]);
@@ -21,7 +22,7 @@ function Home({ user }) {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/categories/active');
+      const response = await axios.get(`${API_BASE_URL}/api/categories/active`);
       setCategories(response.data);
     } catch (error) {
     }
@@ -30,7 +31,7 @@ function Home({ user }) {
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
-      let url = 'http://localhost:8000/api/posts';
+      let url = `${API_BASE_URL}/api/posts`;
       if (selectedCategory) {
         url += `?category=${selectedCategory}`;
       }
@@ -130,7 +131,7 @@ function Home({ user }) {
                     {post.img && (
                       <div className="post-image">
                         <img 
-                          src={`http://localhost:8000${post.img}`} 
+                          src={`${API_BASE_URL}${post.img}`} 
                           alt={post.title}
                           onError={(e) => {
                             e.target.style.display = 'none';

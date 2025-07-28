@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config';
 
 function UserPosts({ user }) {
   const [posts, setPosts] = useState([]);
@@ -16,7 +17,7 @@ function UserPosts({ user }) {
     try {
       setIsLoading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/posts/user/my-posts', {
+      const response = await axios.get(`${API_BASE_URL}/api/posts/user/my-posts`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -94,7 +95,7 @@ function UserPosts({ user }) {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/posts/${postId}`, {
+      await axios.delete(`${API_BASE_URL}/api/posts/${postId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -155,7 +156,7 @@ function UserPosts({ user }) {
                 {post.img && (
                   <div className="post-image">
                     <img 
-                      src={`http://localhost:8000${post.img}`} 
+                      src={`${API_BASE_URL}${post.img}`} 
                       alt={post.title}
                       onError={(e) => {
                         e.target.style.display = 'none';

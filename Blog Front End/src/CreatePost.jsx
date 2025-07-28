@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config';
 
 function CreatePost({ user, onPostCreated }) {
   const navigate = useNavigate();
@@ -25,7 +26,7 @@ function CreatePost({ user, onPostCreated }) {
 
   const fetchCategories = async () => {
     try {
-      const response = await axios.get('http://localhost:8000/api/categories/active');
+      const response = await axios.get(`${API_BASE_URL}/api/categories/active`);
       setCategories(response.data);
     } catch (error) {
     }
@@ -64,7 +65,7 @@ function CreatePost({ user, onPostCreated }) {
     try {
       setIsUploading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.post('http://localhost:8000/api/posts/upload-image', formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/posts/upload-image`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
@@ -121,7 +122,7 @@ function CreatePost({ user, onPostCreated }) {
         category: formData.category
       };
       
-      const response = await axios.post('http://localhost:8000/api/posts', postData, {
+      const response = await axios.post(`${API_BASE_URL}/api/posts`, postData, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'

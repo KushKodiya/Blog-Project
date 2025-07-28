@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config';
 
 function ManageCategories({ user }) {
   const [categories, setCategories] = useState([]);
@@ -16,7 +17,7 @@ function ManageCategories({ user }) {
   const fetchCategories = async () => {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios.get('http://localhost:8000/api/categories', {
+      const response = await axios.get(`${API_BASE_URL}/api/categories`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -33,7 +34,7 @@ function ManageCategories({ user }) {
     e.preventDefault();
     try {
       const token = localStorage.getItem('token');
-      await axios.post('http://localhost:8000/api/categories', newCategory, {
+      await axios.post(`${API_BASE_URL}/api/categories`, newCategory, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -52,7 +53,7 @@ function ManageCategories({ user }) {
   const handleUpdateCategory = async (categoryId, updatedData) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.put(`http://localhost:8000/api/categories/${categoryId}`, updatedData, {
+      await axios.put(`${API_BASE_URL}/api/categories/${categoryId}`, updatedData, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -70,7 +71,7 @@ function ManageCategories({ user }) {
   const handleToggleStatus = async (categoryId) => {
     try {
       const token = localStorage.getItem('token');
-      await axios.patch(`http://localhost:8000/api/categories/${categoryId}/toggle-status`, {}, {
+      await axios.patch(`${API_BASE_URL}/api/categories/${categoryId}/toggle-status`, {}, {
         headers: {
           Authorization: `Bearer ${token}`
         }
@@ -148,7 +149,7 @@ function ManageCategories({ user }) {
 
     try {
       const token = localStorage.getItem('token');
-      await axios.delete(`http://localhost:8000/api/categories/${categoryId}`, {
+      await axios.delete(`${API_BASE_URL}/api/categories/${categoryId}`, {
         headers: {
           Authorization: `Bearer ${token}`
         }

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
+import { API_BASE_URL } from './config';
 
 function PostDetail({ user }) {
   const { slug } = useParams();
@@ -13,9 +14,9 @@ function PostDetail({ user }) {
       try {
         let response;
         try {
-          response = await axios.get(`http://localhost:8000/api/posts/slug/${slug}`);
+          response = await axios.get(`${API_BASE_URL}/api/posts/slug/${slug}`);
         } catch (slugError) {
-          response = await axios.get(`http://localhost:8000/api/posts/${slug}`);
+          response = await axios.get(`${API_BASE_URL}/api/posts/${slug}`);
         }
         setPost(response.data);
       } catch (error) {
@@ -44,7 +45,7 @@ function PostDetail({ user }) {
     <div className="post-detail">
       {post.img && (
         <img 
-          src={`http://localhost:8000${post.img}`} 
+          src={`${API_BASE_URL}${post.img}`} 
           alt={post.title} 
           className="post-detail-image"
           onError={(e) => {

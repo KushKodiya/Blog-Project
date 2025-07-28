@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { toast } from 'react-toastify';
+import { API_BASE_URL } from './config';
 
 function Signup({ onSignup }) {
   const [formData, setFormData] = useState({
@@ -70,7 +71,7 @@ function Signup({ onSignup }) {
 
     if (Object.values(newErrors).every(error => error === '')) {
       try {
-        const response = await axios.post('http://localhost:8000/api/users/register', formData);
+        const response = await axios.post(`${API_BASE_URL}/api/users/register`, formData);
         
         localStorage.setItem('token', response.data.token);
         localStorage.setItem('user', JSON.stringify(response.data.user));
