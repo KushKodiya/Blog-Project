@@ -10,7 +10,7 @@ const app = express();
 const port = process.env.PORT || 8000;
 
 app.use(cors({
-    origin: process.env.FRONTEND_URL /*|| 'http://localhost:5173',*/,
+    origin: process.env.FRONTEND_URL,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
@@ -30,5 +30,9 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {});
 
-const mongoUrl = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/blog-app';
-connectToMongoDb(mongoUrl);
+const mongoUrl = process.env.MONGODB_URI;
+try {connectToMongoDb(mongoUrl)}
+catch (error) {
+    console.error('Failed to connect to MongoDB:', error);
+}
+
