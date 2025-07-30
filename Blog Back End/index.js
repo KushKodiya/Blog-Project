@@ -31,10 +31,7 @@ app.get('/', (req, res) => {
 app.listen(port, () => {});
 
 const mongoUrl = process.env.MONGODB_URI;
-console.log ("mongoUrl", mongoUrl);
-try {connectToMongoDb(mongoUrl)}
-catch (error) {
-    console.error('Failed to connect to MongoDB:', error);
-}
+connectToMongoDb(mongoUrl)
+
 
 
