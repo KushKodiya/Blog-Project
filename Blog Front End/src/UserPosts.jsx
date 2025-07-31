@@ -178,7 +178,7 @@ function UserPosts({ user }) {
                     user={user}
                   />
                   <div className="comment-count">
-                    💬 {post.commentsCount || 0} comments
+                    💬 {post.commentsCount || 0} {(post.commentsCount || 0) === 1 ? 'comment' : 'comments'}
                   </div>
                 </div>
 

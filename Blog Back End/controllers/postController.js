@@ -233,6 +233,114 @@ const deletePost = async (req, res) => {
     }
 };
 
+const getPopularPosts = async (req, res) => {
+    try {
+        const { period = 'week', limit = 5 } = req.query;
+        const userId = req.user?._id;
+        
+        // Calculate date range based on period
+        const now = new Date();
+        let startDate;
+        
+        switch (period) {
+            case 'day':
+                startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+                break;
+            case 'week':
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                break;
+            case 'month':
+                startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                break;
+            default:
+                startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        }
+
+        // Aggregate posts with like counts within the time period
+        const popularPosts = await Post.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate }
+                }
+            },
+            {
+                $lookup: {
+                    from: 'likes',
+                    localField: '_id',
+                    foreignField: 'post',
+                    as: 'likes'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'comments',
+                    localField: '_id',
+                    foreignField: 'post',
+                    as: 'comments'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'users',
+                    localField: 'user',
+                    foreignField: '_id',
+                    as: 'user'
+                }
+            },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'category',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
+            {
+                $addFields: {
+                    likesCount: { $size: '$likes' },
+                    commentsCount: { $size: '$comments' },
+                    isLiked: userId ? { $in: [userId, '$likes.user'] } : false,
+                    user: { $arrayElemAt: ['$user', 0] },
+                    category: { $arrayElemAt: ['$category', 0] }
+                }
+            },
+            {
+                $project: {
+                    title: 1,
+                    body: 1,
+                    img: 1,
+                    slug: 1,
+                    createdAt: 1,
+                    likesCount: 1,
+                    commentsCount: 1,
+                    isLiked: 1,
+                    user: {
+                        _id: 1,
+                        firstName: 1,
+                        lastName: 1,
+                        email: 1
+                    },
+                    category: {
+                        _id: 1,
+                        title: 1,
+                        isActive: 1
+                    }
+                }
+            },
+            {
+                $sort: { likesCount: -1, createdAt: -1 }
+            },
+            {
+                $limit: parseInt(limit)
+            }
+        ]);
+
+        res.json(popularPosts);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     uploadImage,
     createPost,
@@ -241,5 +349,6 @@ module.exports = {
     getPostById,
     getPostBySlug,
     updatePost,
-    deletePost
+    deletePost,
+    getPopularPosts
 };

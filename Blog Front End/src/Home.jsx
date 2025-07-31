@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from './config';
 import LikeButton from './LikeButton';
+import PopularPosts from './PopularPosts';
 
 function Home({ user }) {
   const [posts, setPosts] = useState([]);
@@ -74,7 +75,7 @@ function Home({ user }) {
 
   return (
     <div className="home-layout">
-      <div className="sidebar">
+      <div className="sidebar left-sidebar">
         <div className="categories-section">
           <h3>Categories</h3>
           <div className="category-search">
@@ -162,7 +163,7 @@ function Home({ user }) {
                       user={user}
                     />
                     <div className="comment-count">
-                      💬 {post.commentsCount || 0} comments
+                      💬 {post.commentsCount || 0} {(post.commentsCount || 0) === 1 ? 'comment' : 'comments'}
                     </div>
                   </div>
                 </div>
@@ -170,6 +171,10 @@ function Home({ user }) {
             )}
           </div>
         </div>
+      </div>
+
+      <div className="sidebar right-sidebar">
+        <PopularPosts user={user} />
       </div>
     </div>
   );

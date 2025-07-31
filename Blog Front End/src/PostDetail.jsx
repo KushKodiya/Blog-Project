@@ -91,7 +91,7 @@ function PostDetail({ user }) {
             user={user}
           />
           <div className="comment-count">
-            💬 {commentsCount} comments
+            💬 {commentsCount} {commentsCount === 1 ? 'comment' : 'comments'}
           </div>
         </div>
 

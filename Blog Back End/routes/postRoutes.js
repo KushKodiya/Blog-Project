@@ -11,10 +11,12 @@ const {
     getPostById,
     getPostBySlug,
     updatePost,
-    deletePost
+    deletePost,
+    getPopularPosts
 } = require('../controllers/postController');
 
 router.get('/', optionalAuth, getAllPosts);         
+router.get('/popular', optionalAuth, getPopularPosts);
 router.get('/slug/:slug', optionalAuth, getPostBySlug);
 router.get('/:id', optionalAuth, getPostById);        
 

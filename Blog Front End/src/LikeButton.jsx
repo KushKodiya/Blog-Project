@@ -29,12 +29,6 @@ function LikeButton({ postId, initialLikesCount, initialIsLiked, user }) {
 
       setIsLiked(response.data.isLiked);
       setLikesCount(response.data.likesCount);
-      
-      if (response.data.isLiked) {
-        toast.success('Post liked! ❤️');
-      } else {
-        toast.info('Post unliked');
-      }
     } catch (error) {
       console.error('Error toggling like:', error);
       toast.error('Failed to toggle like. Please try again.');

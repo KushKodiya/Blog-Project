@@ -302,10 +302,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         
         return comment;
       }));
-      
-      if (response.data.isLiked) {
-        toast.success('Comment liked! ❤️');
-      }
     } catch (error) {
       console.error('Error liking comment:', error);
       toast.error('Failed to like comment. Please try again.');
@@ -414,14 +410,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                   <p className="comment-text">{comment.content}</p>
                 )}
               </div>              <div className="comment-actions">
-                {/* Debug info - remove this later */}
-                {process.env.NODE_ENV === 'development' && (
-                  <small style={{color: '#666', fontSize: '0.8rem', display: 'block', marginBottom: '0.5rem'}}>
-                    Debug: Current user ID: {user?._id || 'Not logged in'} | Comment author ID: {comment.user._id} | 
-                    Can edit/delete: {user && user._id === comment.user._id ? 'YES' : 'NO'}
-                  </small>
-                )}
-                
                 <button 
                   className={`comment-like-btn ${comment.likes?.includes(user?._id) ? 'liked' : ''}`}
                   onClick={() => handleLikeComment(comment._id)}
@@ -544,14 +532,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                         )}
                       </div>
                       <div className="comment-actions">
-                        {/* Debug info - remove this later */}
-                        {process.env.NODE_ENV === 'development' && (
-                          <small style={{color: '#666', fontSize: '0.8rem', display: 'block', marginBottom: '0.5rem'}}>
-                            Debug: Current user ID: {user?._id || 'Not logged in'} | Reply author ID: {reply.user._id} | 
-                            Can edit/delete: {user && user._id === reply.user._id ? 'YES' : 'NO'}
-                          </small>
-                        )}
-                        
                         <button 
                           className={`comment-like-btn ${reply.likes?.includes(user?._id) ? 'liked' : ''}`}
                           onClick={() => handleLikeComment(reply._id)}
