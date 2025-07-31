@@ -1,4 +1,5 @@
 const Post = require('../models/post');
+const Like = require('../models/like');
 
 const uploadImage = (req, res) => {
     try {
@@ -47,6 +48,7 @@ const createPost = async (req, res) => {
 const getAllPosts = async (req, res) => {
     try {
         const { category } = req.query;
+        const userId = req.user ? req.user._id : null;
         let filter = {};
         
         if (category) {
@@ -58,15 +60,26 @@ const getAllPosts = async (req, res) => {
             .populate('category', 'title isActive')
             .sort({ createdAt: -1 });
         
-        const postsWithActiveCategories = posts.map(post => {
+        const postsWithLikes = await Promise.all(posts.map(async (post) => {
             const postObj = post.toObject();
             if (postObj.category && !postObj.category.isActive) {
                 postObj.category = null;
             }
+            
+            const likesCount = await Like.countDocuments({ post: post._id });
+            postObj.likesCount = likesCount;
+            
+            if (userId) {
+                const userLike = await Like.findOne({ user: userId, post: post._id });
+                postObj.isLiked = !!userLike;
+            } else {
+                postObj.isLiked = false;
+            }
+            
             return postObj;
-        });
+        }));
         
-        res.json(postsWithActiveCategories);
+        res.json(postsWithLikes);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -74,20 +87,28 @@ const getAllPosts = async (req, res) => {
 
 const getUserPosts = async (req, res) => {
     try {
-        const posts = await Post.find({ user: req.user._id })
+        const userId = req.user._id;
+        const posts = await Post.find({ user: userId })
             .populate('user', 'firstName lastName email')
             .populate('category', 'title isActive')
             .sort({ createdAt: -1 });
         
-        const postsWithActiveCategories = posts.map(post => {
+        const postsWithLikes = await Promise.all(posts.map(async (post) => {
             const postObj = post.toObject();
             if (postObj.category && !postObj.category.isActive) {
                 postObj.category = null;
             }
+            
+            const likesCount = await Like.countDocuments({ post: post._id });
+            postObj.likesCount = likesCount;
+            
+            const userLike = await Like.findOne({ user: userId, post: post._id });
+            postObj.isLiked = !!userLike;
+            
             return postObj;
-        });
+        }));
         
-        res.json(postsWithActiveCategories);
+        res.json(postsWithLikes);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -95,6 +116,7 @@ const getUserPosts = async (req, res) => {
 
 const getPostById = async (req, res) => {
     try {
+        const userId = req.user ? req.user._id : null;
         const post = await Post.findById(req.params.id)
             .populate('user', 'firstName lastName email')
             .populate('category', 'title isActive');
@@ -107,6 +129,16 @@ const getPostById = async (req, res) => {
             postObj.category = null;
         }
         
+        const likesCount = await Like.countDocuments({ post: post._id });
+        postObj.likesCount = likesCount;
+        
+        if (userId) {
+            const userLike = await Like.findOne({ user: userId, post: post._id });
+            postObj.isLiked = !!userLike;
+        } else {
+            postObj.isLiked = false;
+        }
+        
         res.json(postObj);
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -115,6 +147,7 @@ const getPostById = async (req, res) => {
 
 const getPostBySlug = async (req, res) => {
     try {
+        const userId = req.user ? req.user._id : null;
         const post = await Post.findOne({ slug: req.params.slug })
             .populate('user', 'firstName lastName email')
             .populate('category', 'title isActive');
@@ -125,6 +158,16 @@ const getPostBySlug = async (req, res) => {
         const postObj = post.toObject();
         if (postObj.category && !postObj.category.isActive) {
             postObj.category = null;
+        }
+        
+        const likesCount = await Like.countDocuments({ post: post._id });
+        postObj.likesCount = likesCount;
+        
+        if (userId) {
+            const userLike = await Like.findOne({ user: userId, post: post._id });
+            postObj.isLiked = !!userLike;
+        } else {
+            postObj.isLiked = false;
         }
         
         res.json(postObj);

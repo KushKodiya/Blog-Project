@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from './config';
+import LikeButton from './LikeButton';
+import CommentSection from './CommentSection';
 
 function PostDetail({ user }) {
   const { slug } = useParams();
@@ -12,11 +14,14 @@ function PostDetail({ user }) {
   useEffect(() => {
     const fetchPost = async () => {
       try {
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+        
         let response;
         try {
-          response = await axios.get(`${API_BASE_URL}/api/posts/slug/${slug}`);
+          response = await axios.get(`${API_BASE_URL}/api/posts/slug/${slug}`, { headers });
         } catch (slugError) {
-          response = await axios.get(`${API_BASE_URL}/api/posts/${slug}`);
+          response = await axios.get(`${API_BASE_URL}/api/posts/${slug}`, { headers });
         }
         setPost(response.data);
       } catch (error) {
@@ -71,6 +76,18 @@ function PostDetail({ user }) {
             <p key={index}>{paragraph}</p>
           ))}
         </div>
+        
+        <div className="post-actions">
+          <LikeButton 
+            postId={post._id}
+            initialLikesCount={post.likesCount}
+            initialIsLiked={post.isLiked}
+            user={user}
+          />
+        </div>
+
+        <CommentSection postId={post._id} user={user} />
+        
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
           <Link to="/" className="btn btn-secondary">Back to Home</Link>
         </div>

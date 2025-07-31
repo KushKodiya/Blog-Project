@@ -39,7 +39,25 @@ const postSchema = new mongoose.Schema({
         ref: 'Category',
         required: true,
     }
-}, {timestamps: true });
+}, {
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+});
+
+postSchema.virtual('likesCount', {
+    ref: 'Like',
+    localField: '_id',
+    foreignField: 'post',
+    count: true
+});
+
+postSchema.virtual('commentsCount', {
+    ref: 'Comment',
+    localField: '_id',
+    foreignField: 'post',
+    count: true
+});
 
 postSchema.pre('save', async function(next) {
     if (this.isNew || this.isModified('title')) {

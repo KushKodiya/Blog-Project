@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from './config';
+import LikeButton from './LikeButton';
 
 function Home({ user }) {
   const [posts, setPosts] = useState([]);
@@ -31,11 +32,14 @@ function Home({ user }) {
   const fetchPosts = async () => {
     try {
       setIsLoading(true);
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
       let url = `${API_BASE_URL}/api/posts`;
       if (selectedCategory) {
         url += `?category=${selectedCategory}`;
       }
-      const response = await axios.get(url);
+      const response = await axios.get(url, { headers });
       setPosts(response.data);
     } catch (error) {
       setError('Failed to load posts');
@@ -115,8 +119,8 @@ function Home({ user }) {
               </div>
             ) : (
               filteredPosts.map(post => (
-                <Link to={`/post/${post.slug || post._id}`} key={post._id} className="post-card-link">
-                  <div className="post-card">
+                <div key={post._id} className="post-card">
+                  <Link to={`/post/${post.slug || post._id}`} className="post-card-link">
                     <div className="post-header">
                       <h2>{post.title}</h2>
                       <div className="post-meta">
@@ -148,8 +152,20 @@ function Home({ user }) {
                         </span>
                       )}
                     </div>
+                  </Link>
+                  
+                  <div className="post-actions">
+                    <LikeButton 
+                      postId={post._id}
+                      initialLikesCount={post.likesCount}
+                      initialIsLiked={post.isLiked}
+                      user={user}
+                    />
+                    <div className="comment-count">
+                      💬 {post.commentsCount || 0} comments
+                    </div>
                   </div>
-                </Link>
+                </div>
               ))
             )}
           </div>

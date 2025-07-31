@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from './config';
+import LikeButton from './LikeButton';
 
 function UserPosts({ user }) {
   const [posts, setPosts] = useState([]);
@@ -167,6 +168,18 @@ function UserPosts({ user }) {
                 
                 <div className="post-body">
                   <p>{post.body.length > 150 ? post.body.substring(0, 150) + '...' : post.body}</p>
+                </div>
+
+                <div className="post-stats">
+                  <LikeButton 
+                    postId={post._id}
+                    initialLikesCount={post.likesCount}
+                    initialIsLiked={post.isLiked}
+                    user={user}
+                  />
+                  <div className="comment-count">
+                    💬 {post.commentsCount || 0} comments
+                  </div>
                 </div>
 
                 <div className="post-actions">
