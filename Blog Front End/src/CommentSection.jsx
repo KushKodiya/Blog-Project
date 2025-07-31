@@ -153,9 +153,23 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         }
       );
 
-      setComments(comments.map(comment => 
-        comment._id === commentId ? response.data.comment : comment
-      ));
+      // Update the comment in the state (handle both main comments and replies)
+      setComments(comments.map(comment => {
+        if (comment._id === commentId) {
+          // It's a main comment
+          return response.data.comment;
+        } else if (comment.replies && comment.replies.some(reply => reply._id === commentId)) {
+          // It's a reply, update it in the replies array
+          return {
+            ...comment,
+            replies: comment.replies.map(reply => 
+              reply._id === commentId ? response.data.comment : reply
+            )
+          };
+        }
+        return comment;
+      }));
+
       setEditingComment(null);
       setEditText('');
       toast.success('Comment updated successfully!');
@@ -219,7 +233,21 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         }
       });
 
-      const updatedComments = comments.filter(comment => comment._id !== commentId);
+      // Check if it's a main comment or a reply
+      const updatedComments = comments.map(comment => {
+        if (comment._id === commentId) {
+          // It's a main comment, remove it entirely
+          return null;
+        } else if (comment.replies && comment.replies.some(reply => reply._id === commentId)) {
+          // It's a reply, remove it from the replies array
+          return {
+            ...comment,
+            replies: comment.replies.filter(reply => reply._id !== commentId)
+          };
+        }
+        return comment;
+      }).filter(comment => comment !== null);
+
       setComments(updatedComments);
       updateCommentCount(updatedComments);
       toast.success('Comment deleted successfully');
@@ -385,9 +413,15 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                 ) : (
                   <p className="comment-text">{comment.content}</p>
                 )}
-              </div>
-
-              <div className="comment-actions">
+              </div>              <div className="comment-actions">
+                {/* Debug info - remove this later */}
+                {process.env.NODE_ENV === 'development' && (
+                  <small style={{color: '#666', fontSize: '0.8rem', display: 'block', marginBottom: '0.5rem'}}>
+                    Debug: Current user ID: {user?._id || 'Not logged in'} | Comment author ID: {comment.user._id} | 
+                    Can edit/delete: {user && user._id === comment.user._id ? 'YES' : 'NO'}
+                  </small>
+                )}
+                
                 <button 
                   className={`comment-like-btn ${comment.likes?.includes(user?._id) ? 'liked' : ''}`}
                   onClick={() => handleLikeComment(comment._id)}
@@ -395,7 +429,7 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                 >
                   ❤️ {comment.likes?.length || 0}
                 </button>
-                
+
                 {user && (
                   <button 
                     className="comment-reply-btn"
@@ -483,9 +517,41 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                         </div>
                       </div>
                       <div className="comment-content">
-                        <p className="comment-text">{reply.content}</p>
+                        {editingComment === reply._id ? (
+                          <form onSubmit={(e) => handleEditComment(e, reply._id)}>
+                            <textarea
+                              value={editText}
+                              onChange={(e) => setEditText(e.target.value)}
+                              className="comment-input"
+                              rows="3"
+                            />
+                            <div className="comment-edit-actions">
+                              <button type="submit" className="btn btn-sm btn-primary">Save</button>
+                              <button 
+                                type="button" 
+                                className="btn btn-sm btn-secondary"
+                                onClick={() => {
+                                  setEditingComment(null);
+                                  setEditText('');
+                                }}
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          </form>
+                        ) : (
+                          <p className="comment-text">{reply.content}</p>
+                        )}
                       </div>
                       <div className="comment-actions">
+                        {/* Debug info - remove this later */}
+                        {process.env.NODE_ENV === 'development' && (
+                          <small style={{color: '#666', fontSize: '0.8rem', display: 'block', marginBottom: '0.5rem'}}>
+                            Debug: Current user ID: {user?._id || 'Not logged in'} | Reply author ID: {reply.user._id} | 
+                            Can edit/delete: {user && user._id === reply.user._id ? 'YES' : 'NO'}
+                          </small>
+                        )}
+                        
                         <button 
                           className={`comment-like-btn ${reply.likes?.includes(user?._id) ? 'liked' : ''}`}
                           onClick={() => handleLikeComment(reply._id)}
@@ -493,6 +559,26 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                         >
                           ❤️ {reply.likes?.length || 0}
                         </button>
+                        
+                        {user && user._id === reply.user._id && (
+                          <>
+                            <button 
+                              className="comment-edit-btn"
+                              onClick={() => {
+                                setEditingComment(reply._id);
+                                setEditText(reply.content);
+                              }}
+                            >
+                              Edit
+                            </button>
+                            <button 
+                              className="comment-delete-btn"
+                              onClick={() => confirmDelete(reply._id)}
+                            >
+                              Delete
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
