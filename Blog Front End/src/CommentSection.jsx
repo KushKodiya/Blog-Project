@@ -339,11 +339,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
       {user && (
         <form onSubmit={handleSubmitComment} className="comment-form">
           <div className="comment-input-container">
-            <img 
-              src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=007bff&color=fff`}
-              alt="Your avatar"
-              className="comment-avatar"
-            />
             <textarea
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
@@ -369,11 +364,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
           {comments.map(comment => (
             <div key={comment._id} className="comment">
               <div className="comment-header">
-                <img 
-                  src={`https://ui-avatars.com/api/?name=${comment.user.firstName}+${comment.user.lastName}&background=007bff&color=fff`}
-                  alt={`${comment.user.firstName} ${comment.user.lastName}`}
-                  className="comment-avatar"
-                />
                 <div className="comment-meta">
                   <span className="comment-author">
                     {comment.user.firstName} {comment.user.lastName}
@@ -451,11 +441,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
               {replyingTo === comment._id && user && (
                 <form onSubmit={(e) => handleSubmitReply(e, comment._id)} className="reply-form">
                   <div className="comment-input-container">
-                    <img 
-                      src={`https://ui-avatars.com/api/?name=${user.firstName}+${user.lastName}&background=007bff&color=fff`}
-                      alt="Your avatar"
-                      className="comment-avatar"
-                    />
                     <textarea
                       value={replyText}
                       onChange={(e) => setReplyText(e.target.value)}
@@ -491,11 +476,6 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                   {comment.replies.map(reply => (
                     <div key={reply._id} className="reply">
                       <div className="comment-header">
-                        <img 
-                          src={`https://ui-avatars.com/api/?name=${reply.user.firstName}+${reply.user.lastName}&background=007bff&color=fff`}
-                          alt={`${reply.user.firstName} ${reply.user.lastName}`}
-                          className="comment-avatar small"
-                        />
                         <div className="comment-meta">
                           <span className="comment-author">
                             {reply.user.firstName} {reply.user.lastName}
