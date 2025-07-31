@@ -46,7 +46,10 @@ function CommentSection({ postId, user, onCommentCountChange }) {
   const fetchComments = async () => {
     setIsLoading(true);
     try {
-      const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}`);
+      const token = localStorage.getItem('token');
+      const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+      
+      const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}`, { headers });
       const commentsData = response.data.comments || [];
       setComments(commentsData);
       updateCommentCount(commentsData);
@@ -277,22 +280,30 @@ function CommentSection({ postId, user, onCommentCountChange }) {
 
       setComments(comments.map(comment => {
         if (comment._id === commentId) {
+          // Update main comment
+          const updatedLikes = response.data.isLiked 
+            ? [...(comment.likes || []).filter(id => id !== user._id), user._id]
+            : (comment.likes || []).filter(id => id !== user._id);
+          
           return {
             ...comment,
-            likes: response.data.isLiked 
-              ? [...(comment.likes || []), user._id]
-              : (comment.likes || []).filter(id => id !== user._id)
+            isLiked: response.data.isLiked,
+            likes: updatedLikes
           };
         }
         
         if (comment.replies && comment.replies.length > 0) {
           const updatedReplies = comment.replies.map(reply => {
             if (reply._id === commentId) {
+              // Update reply
+              const updatedLikes = response.data.isLiked 
+                ? [...(reply.likes || []).filter(id => id !== user._id), user._id]
+                : (reply.likes || []).filter(id => id !== user._id);
+              
               return {
                 ...reply,
-                likes: response.data.isLiked 
-                  ? [...(reply.likes || []), user._id]
-                  : (reply.likes || []).filter(id => id !== user._id)
+                isLiked: response.data.isLiked,
+                likes: updatedLikes
               };
             }
             return reply;
@@ -399,40 +410,52 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                 ) : (
                   <p className="comment-text">{comment.content}</p>
                 )}
-              </div>              <div className="comment-actions">
+              </div>              <div className="comment-actions modern-comment-actions">
                 <button 
-                  className={`comment-like-btn ${comment.likes?.includes(user?._id) ? 'liked' : ''}`}
+                  className={`modern-comment-btn ${comment.isLiked === true ? 'liked' : ''}`}
                   onClick={() => handleLikeComment(comment._id)}
                   disabled={!user}
                 >
-                  ❤️ {comment.likes?.length || 0}
+                  <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                  <span className="btn-count">{comment.likes?.length || 0}</span>
                 </button>
 
                 {user && (
                   <button 
-                    className="comment-reply-btn"
+                    className="modern-comment-btn reply-btn"
                     onClick={() => setReplyingTo(replyingTo === comment._id ? null : comment._id)}
                   >
-                    Reply
+                    <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"/>
+                    </svg>
+                    <span>Reply</span>
                   </button>
                 )}
 
                 {user && user._id === comment.user._id && (
                   <>
                     <button 
-                      className="comment-edit-btn"
+                      className="modern-comment-btn edit-btn"
                       onClick={() => {
                         setEditingComment(comment._id);
                         setEditText(comment.content);
                       }}
                     >
-                      Edit
+                      <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                      </svg>
+                      <span>Edit</span>
                     </button>
                     <button 
-                      className="comment-delete-btn"
+                      className="modern-comment-btn delete-btn"
                       onClick={() => confirmDelete(comment._id)}
                     >
-                      Delete
+                      <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                      </svg>
+                      <span>Delete</span>
                     </button>
                   </>
                 )}
@@ -449,23 +472,29 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                       rows="2"
                     />
                   </div>
-                  <div className="reply-actions">
+                  <div className="reply-actions modern-reply-actions">
                     <button 
                       type="submit" 
-                      className="btn btn-sm btn-primary"
+                      className="modern-action-btn primary"
                       disabled={isSubmitting || !replyText.trim()}
                     >
-                      {isSubmitting ? 'Replying...' : 'Reply'}
+                      <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                      </svg>
+                      <span>{isSubmitting ? 'Replying...' : 'Reply'}</span>
                     </button>
                     <button 
                       type="button" 
-                      className="btn btn-sm btn-secondary"
+                      className="modern-action-btn secondary"
                       onClick={() => {
                         setReplyingTo(null);
                         setReplyText('');
                       }}
                     >
-                      Cancel
+                      <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                      </svg>
+                      <span>Cancel</span>
                     </button>
                   </div>
                 </form>
@@ -493,17 +522,25 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                               className="comment-input"
                               rows="3"
                             />
-                            <div className="comment-edit-actions">
-                              <button type="submit" className="btn btn-sm btn-primary">Save</button>
+                            <div className="comment-edit-actions modern-reply-actions">
+                              <button type="submit" className="modern-action-btn primary">
+                                <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                </svg>
+                                <span>Save</span>
+                              </button>
                               <button 
                                 type="button" 
-                                className="btn btn-sm btn-secondary"
+                                className="modern-action-btn secondary"
                                 onClick={() => {
                                   setEditingComment(null);
                                   setEditText('');
                                 }}
                               >
-                                Cancel
+                                <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                                </svg>
+                                <span>Cancel</span>
                               </button>
                             </div>
                           </form>
@@ -511,31 +548,40 @@ function CommentSection({ postId, user, onCommentCountChange }) {
                           <p className="comment-text">{reply.content}</p>
                         )}
                       </div>
-                      <div className="comment-actions">
+                      <div className="comment-actions modern-comment-actions">
                         <button 
-                          className={`comment-like-btn ${reply.likes?.includes(user?._id) ? 'liked' : ''}`}
+                          className={`modern-comment-btn ${reply.isLiked === true ? 'liked' : ''}`}
                           onClick={() => handleLikeComment(reply._id)}
                           disabled={!user}
                         >
-                          ❤️ {reply.likes?.length || 0}
+                          <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                          </svg>
+                          <span className="btn-count">{reply.likes?.length || 0}</span>
                         </button>
                         
                         {user && user._id === reply.user._id && (
                           <>
                             <button 
-                              className="comment-edit-btn"
+                              className="modern-comment-btn edit-btn"
                               onClick={() => {
                                 setEditingComment(reply._id);
                                 setEditText(reply.content);
                               }}
                             >
-                              Edit
+                              <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                              </svg>
+                              <span>Edit</span>
                             </button>
                             <button 
-                              className="comment-delete-btn"
+                              className="modern-comment-btn delete-btn"
                               onClick={() => confirmDelete(reply._id)}
                             >
-                              Delete
+                              <svg className="btn-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                              </svg>
+                              <span>Delete</span>
                             </button>
                           </>
                         )}

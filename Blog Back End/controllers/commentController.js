@@ -31,9 +31,13 @@ const createComment = async (req, res) => {
         await comment.save();
         await comment.populate('user', 'firstName lastName email');
 
+        // Add isLiked field for the current user (always false for new comments)
+        const commentObj = comment.toObject();
+        commentObj.isLiked = false;
+
         res.status(201).json({
             message: 'Comment created successfully',
-            comment
+            comment: commentObj
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -46,6 +50,7 @@ const getCommentsByPost = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
+        const userId = req.user?._id; // Get current user ID if logged in
 
         const post = await Post.findById(postId);
         if (!post) {
@@ -57,21 +62,48 @@ const getCommentsByPost = async (req, res) => {
             parentComment: null 
         })
         .populate('user', 'firstName lastName email')
-        .populate({
-            path: 'replies',
-            populate: {
-                path: 'user',
-                select: 'firstName lastName email'
-            }
-        })
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
 
+        // Manually fetch replies for each comment to ensure likes field is included
+        const commentsWithReplies = await Promise.all(
+            comments.map(async (comment) => {
+                const replies = await Comment.find({ parentComment: comment._id })
+                    .populate('user', 'firstName lastName email')
+                    .sort({ createdAt: 1 });
+                
+                const commentObj = comment.toObject();
+                commentObj.replies = replies;
+                return commentObj;
+            })
+        );
+
+        // Add like information for current user
+        const commentsWithLikes = commentsWithReplies.map(comment => {
+            // Add like info for main comment
+            if (userId) {
+                comment.isLiked = comment.likes.some(likeId => likeId.toString() === userId.toString());
+            }
+            
+            // Add like info for replies
+            if (comment.replies && comment.replies.length > 0) {
+                comment.replies = comment.replies.map(reply => {
+                    const replyObj = reply.toObject ? reply.toObject() : reply;
+                    if (userId) {
+                        replyObj.isLiked = reply.likes && reply.likes.some(likeId => likeId.toString() === userId.toString());
+                    }
+                    return replyObj;
+                });
+            }
+            
+            return comment;
+        });
+
         const totalComments = await Comment.countDocuments({ post: postId });
 
         res.json({
-            comments,
+            comments: commentsWithLikes,
             pagination: {
                 currentPage: page,
                 totalPages: Math.ceil(totalComments / limit),
@@ -106,9 +138,13 @@ const updateComment = async (req, res) => {
 
         await comment.populate('user', 'firstName lastName email');
 
+        // Add isLiked field for the current user
+        const commentObj = comment.toObject();
+        commentObj.isLiked = comment.likes.some(likeId => likeId.toString() === userId.toString());
+
         res.json({
             message: 'Comment updated successfully',
-            comment
+            comment: commentObj
         });
     } catch (error) {
         res.status(500).json({ error: error.message });
@@ -148,7 +184,7 @@ const toggleCommentLike = async (req, res) => {
             return res.status(404).json({ error: 'Comment not found' });
         }
 
-        const userLikedIndex = comment.likes.indexOf(userId);
+        const userLikedIndex = comment.likes.findIndex(likeId => likeId.toString() === userId.toString());
         
         if (userLikedIndex > -1) {
             comment.likes.splice(userLikedIndex, 1);

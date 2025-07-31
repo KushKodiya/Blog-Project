@@ -83,15 +83,18 @@ function PostDetail({ user }) {
           ))}
         </div>
         
-        <div className="post-actions">
+        <div className="post-actions modern-actions">
           <LikeButton 
             postId={post._id}
             initialLikesCount={post.likesCount}
             initialIsLiked={post.isLiked}
             user={user}
           />
-          <div className="comment-count">
-            💬 {commentsCount} {commentsCount === 1 ? 'comment' : 'comments'}
+          <div className="comment-count modern-stat-item comments">
+            <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
+            </svg>
+            <span className="stat-count">{commentsCount}</span>
           </div>
         </div>
 
