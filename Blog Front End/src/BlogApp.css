@@ -780,86 +780,267 @@ body {
   justify-content: flex-end;
 }
 
-.post-actions .btn {
-  padding: 0.5rem 1rem;
-  font-size: 0.9rem;
+/* Popular Posts Section */
+.popular-posts-section {
+  width: 100%;
 }
 
+.popular-posts-header {
+  margin-bottom: 1.5rem;
+}
+
+.popular-posts-header h3 {
+  color: #495057;
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.period-selector {
+  display: flex;
+  gap: 0.25rem;
+  background: #f8f9fa;
+  padding: 0.25rem;
+  border-radius: 10px;
+  border: 2px solid #e9ecef;
+}
+
+.period-btn {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: none;
+  background: transparent;
+  color: #6c757d;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.period-btn:hover {
+  background: rgba(0, 123, 255, 0.1);
+  color: #007bff;
+}
+
+.period-btn.active {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+}
+
+/* Popular Posts List (Sidebar Layout) */
+.popular-posts-section .popular-posts-list {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 1rem !important;
+}
+
+.popular-posts-section .popular-post-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 1rem;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.popular-posts-section .popular-post-item:hover {
+  transform: translateY(-2px);
+  border-color: #007bff;
+  box-shadow: 0 4px 16px rgba(0, 123, 255, 0.15);
+}
+
+.popular-posts-section .popular-post-rank {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  border-radius: 50%;
+  margin-top: 0.25rem;
+}
+
+.popular-posts-section .rank-number {
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.popular-posts-section .popular-post-content {
+  flex: 1;
+  display: flex;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  align-items: flex-start;
+}
+
+.popular-posts-section .popular-post-content:hover {
+  text-decoration: none;
+  color: inherit;
+}
+
+.popular-posts-section .popular-post-image {
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  overflow: hidden;
+  background: #f8f9fa;
+}
+
+.popular-posts-section .popular-post-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.popular-posts-section .popular-post-item:hover .popular-post-image img {
+  transform: scale(1.05);
+}
+
+.popular-posts-section .popular-post-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.popular-posts-section .popular-post-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #495057;
+  margin: 0;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.popular-posts-section .popular-post-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.popular-posts-section .popular-post-stats {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.popular-posts-section .likes-count,
+.popular-posts-section .comments-count {
+  font-size: 0.75rem;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.popular-posts-section .popular-post-date {
+  font-size: 0.7rem;
+  color: #adb5bd;
+  font-weight: 500;
+}
+
+.popular-posts-section .popular-post-author {
+  font-size: 0.7rem;
+  color: #007bff;
+  font-weight: 500;
+}
+
+.loading-popular {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.no-popular-posts {
+  text-align: center;
+  padding: 2rem;
+  color: #6c757d;
+}
+
+/* Responsive Design for Popular Posts */
 @media (max-width: 768px) {
-  .nav-container {
-    padding: 1rem;
+  .popular-posts-section .popular-post-item {
+    padding: 0.75rem;
+    gap: 0.5rem;
+  }
+  
+  .popular-posts-section .popular-post-image {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .popular-posts-section .popular-post-title {
+    font-size: 0.8rem;
+  }
+  
+  .popular-posts-section .likes-count,
+  .popular-posts-section .comments-count {
+    font-size: 0.7rem;
+  }
+  
+  .popular-posts-section .popular-post-date,
+  .popular-posts-section .popular-post-author {
+    font-size: 0.65rem;
+  }
+  
+  .popular-posts-section .rank-number {
+    font-size: 0.7rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .popular-posts-section {
+    padding: 0 0.5rem;
+  }
+  
+  .popular-posts-section .popular-post-item {
+    padding: 0.5rem;
+    gap: 0.5rem;
     flex-direction: column;
-    gap: 1rem;
+    align-items: stretch;
   }
-
-  .nav-links {
-    gap: 1rem;
+  
+  .popular-posts-section .popular-post-rank {
+    align-self: flex-start;
+    margin-bottom: 0.5rem;
   }
-
-  .main-content {
-    padding: 1rem;
-  }
-
-  .signup-container,
-  .login-container,
-  .create-post-container,
-  .form-container {
-    margin: 1rem auto;
-    padding: 1.5rem;
-  }
-
-  .post-card {
-    padding: 1.5rem;
-  }
-
-  .post-meta {
+  
+  .popular-posts-section .popular-post-content {
     flex-direction: column;
     gap: 0.5rem;
   }
-
-  .post-detail-title {
-    font-size: 2rem;
-  }
   
-  .post-detail-content {
-    padding: 1.5rem;
-  }
-  
-  form {
-    margin: 1rem;
-    padding: 1.5rem;
-  }
-
-  .category-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 1rem;
-  }
-
-  .category-actions {
+  .popular-posts-section .popular-post-image {
     width: 100%;
-    justify-content: flex-start;
-  }
-
-  .category-actions .btn {
-    flex: 1;
-    min-width: 80px;
-  }
-
-  .user-posts-container {
-    padding: 1rem;
+    height: 120px;
+    align-self: center;
   }
   
-  .posts-grid {
-    grid-template-columns: 1fr;
-    gap: 1.5rem;
+  .popular-posts-section .period-selector {
+    flex-direction: column;
+    gap: 0.25rem;
   }
   
-  .user-posts-header h1 {
-    font-size: 2rem;
-  }
-  
-  .post-actions {
-    justify-content: center;
+  .popular-posts-section .period-btn {
+    padding: 0.5rem;
+    text-align: center;
   }
 }
