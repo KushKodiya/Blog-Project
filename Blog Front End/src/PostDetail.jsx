@@ -10,6 +10,7 @@ function PostDetail({ user }) {
   const [post, setPost] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [commentsCount, setCommentsCount] = useState(0);
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -24,6 +25,7 @@ function PostDetail({ user }) {
           response = await axios.get(`${API_BASE_URL}/api/posts/${slug}`, { headers });
         }
         setPost(response.data);
+        setCommentsCount(response.data.commentsCount || 0);
       } catch (error) {
         setError('Post not found');
       } finally {
@@ -33,6 +35,10 @@ function PostDetail({ user }) {
 
     fetchPost();
   }, [slug]);
+
+  const handleCommentCountChange = (newCount) => {
+    setCommentsCount(newCount);
+  };
 
   if (isLoading) {
     return <div className="loading">Loading post...</div>;
@@ -84,9 +90,16 @@ function PostDetail({ user }) {
             initialIsLiked={post.isLiked}
             user={user}
           />
+          <div className="comment-count">
+            💬 {commentsCount} comments
+          </div>
         </div>
 
-        <CommentSection postId={post._id} user={user} />
+        <CommentSection 
+          postId={post._id} 
+          user={user} 
+          onCommentCountChange={handleCommentCountChange}
+        />
         
         <div style={{ marginTop: '2rem', textAlign: 'center' }}>
           <Link to="/" className="btn btn-secondary">Back to Home</Link>

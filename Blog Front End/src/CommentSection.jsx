@@ -3,7 +3,7 @@ import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from './config';
 
-function CommentSection({ postId, user }) {
+function CommentSection({ postId, user, onCommentCountChange }) {
   const [comments, setComments] = useState([]);
   const [newComment, setNewComment] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -26,11 +26,30 @@ function CommentSection({ postId, user }) {
     return () => clearInterval(interval);
   }, []);
 
+  const countAllComments = (commentsList) => {
+    let total = commentsList.length;
+    commentsList.forEach(comment => {
+      if (comment.replies && comment.replies.length > 0) {
+        total += comment.replies.length;
+      }
+    });
+    return total;
+  };
+
+  const updateCommentCount = (commentsList) => {
+    const totalCount = countAllComments(commentsList);
+    if (onCommentCountChange) {
+      onCommentCountChange(totalCount);
+    }
+  };
+
   const fetchComments = async () => {
     setIsLoading(true);
     try {
       const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}`);
-      setComments(response.data.comments || []);
+      const commentsData = response.data.comments || [];
+      setComments(commentsData);
+      updateCommentCount(commentsData);
     } catch (error) {
       console.error('Error fetching comments:', error);
     } finally {
@@ -62,7 +81,9 @@ function CommentSection({ postId, user }) {
         }
       );
 
-      setComments([response.data.comment, ...comments]);
+      const updatedComments = [response.data.comment, ...comments];
+      setComments(updatedComments);
+      updateCommentCount(updatedComments);
       setNewComment('');
       toast.success('Comment posted successfully!');
     } catch (error) {
@@ -98,11 +119,13 @@ function CommentSection({ postId, user }) {
         }
       );
 
-      setComments(comments.map(comment => 
+      const updatedComments = comments.map(comment => 
         comment._id === parentCommentId
           ? { ...comment, replies: [...(comment.replies || []), response.data.comment] }
           : comment
-      ));
+      );
+      setComments(updatedComments);
+      updateCommentCount(updatedComments);
       setReplyText('');
       setReplyingTo(null);
       toast.success('Reply posted successfully!');
@@ -196,7 +219,9 @@ function CommentSection({ postId, user }) {
         }
       });
 
-      setComments(comments.filter(comment => comment._id !== commentId));
+      const updatedComments = comments.filter(comment => comment._id !== commentId);
+      setComments(updatedComments);
+      updateCommentCount(updatedComments);
       toast.success('Comment deleted successfully');
     } catch (error) {
       console.error('Error deleting comment:', error);
@@ -285,7 +310,7 @@ function CommentSection({ postId, user }) {
 
   return (
     <div className="comment-section">
-      <h3>Comments ({comments.length})</h3>
+      <h3>Comments ({countAllComments(comments)})</h3>
       
       {user && (
         <form onSubmit={handleSubmitComment} className="comment-form">
