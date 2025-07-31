@@ -929,6 +929,18 @@ body {
   overflow: hidden;
 }
 
+.popular-posts-section .popular-post-excerpt {
+  font-size: 0.75rem;
+  color: #6c757d;
+  line-height: 1.4;
+  margin: 0.5rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .popular-posts-section .popular-post-meta {
   display: flex;
   flex-direction: column;
@@ -937,8 +949,45 @@ body {
 
 .popular-posts-section .popular-post-stats {
   display: flex;
-  gap: 0.75rem;
+  gap: 1rem;
   align-items: center;
+}
+
+.popular-posts-section .stat-item {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: rgba(0, 123, 255, 0.08);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+
+.popular-posts-section .stat-item.likes {
+  background: rgba(239, 68, 68, 0.1);
+  color: #dc2626;
+}
+
+.popular-posts-section .stat-item.comments {
+  background: rgba(59, 130, 246, 0.1);
+  color: #2563eb;
+}
+
+.popular-posts-section .stat-item:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.popular-posts-section .stat-icon {
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+}
+
+.popular-posts-section .stat-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1;
 }
 
 .popular-posts-section .likes-count,
@@ -989,6 +1038,12 @@ body {
   
   .popular-posts-section .popular-post-title {
     font-size: 0.8rem;
+  }
+  
+  .popular-posts-section .popular-post-excerpt {
+    font-size: 0.7rem;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
   }
   
   .popular-posts-section .likes-count,
