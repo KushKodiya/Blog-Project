@@ -1,5 +1,6 @@
 const Post = require('../models/post');
 const Like = require('../models/like');
+const Comment = require('../models/comment');
 
 const uploadImage = (req, res) => {
     try {
@@ -67,7 +68,9 @@ const getAllPosts = async (req, res) => {
             }
             
             const likesCount = await Like.countDocuments({ post: post._id });
+            const commentsCount = await Comment.countDocuments({ post: post._id });
             postObj.likesCount = likesCount;
+            postObj.commentsCount = commentsCount;
             
             if (userId) {
                 const userLike = await Like.findOne({ user: userId, post: post._id });
@@ -100,7 +103,9 @@ const getUserPosts = async (req, res) => {
             }
             
             const likesCount = await Like.countDocuments({ post: post._id });
+            const commentsCount = await Comment.countDocuments({ post: post._id });
             postObj.likesCount = likesCount;
+            postObj.commentsCount = commentsCount;
             
             const userLike = await Like.findOne({ user: userId, post: post._id });
             postObj.isLiked = !!userLike;
@@ -130,7 +135,9 @@ const getPostById = async (req, res) => {
         }
         
         const likesCount = await Like.countDocuments({ post: post._id });
+        const commentsCount = await Comment.countDocuments({ post: post._id });
         postObj.likesCount = likesCount;
+        postObj.commentsCount = commentsCount;
         
         if (userId) {
             const userLike = await Like.findOne({ user: userId, post: post._id });
@@ -161,7 +168,9 @@ const getPostBySlug = async (req, res) => {
         }
         
         const likesCount = await Like.countDocuments({ post: post._id });
+        const commentsCount = await Comment.countDocuments({ post: post._id });
         postObj.likesCount = likesCount;
+        postObj.commentsCount = commentsCount;
         
         if (userId) {
             const userLike = await Like.findOne({ user: userId, post: post._id });
@@ -214,7 +223,10 @@ const deletePost = async (req, res) => {
             return res.status(403).json({ error: 'Not authorized to delete this post' });
         }
         
+        await Comment.deleteMany({ post: req.params.id });
+        await Like.deleteMany({ post: req.params.id });
         await Post.findByIdAndDelete(req.params.id);
+        
         res.json({ message: 'Post deleted successfully' });
     } catch (error) {
         res.status(500).json({ error: error.message });

@@ -12,10 +12,19 @@ function CommentSection({ postId, user }) {
   const [replyText, setReplyText] = useState('');
   const [editingComment, setEditingComment] = useState(null);
   const [editText, setEditText] = useState('');
+  const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
     fetchComments();
   }, [postId]);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTime(Date.now());
+    }, 60000);
+
+    return () => clearInterval(interval);
+  }, []);
 
   const fetchComments = async () => {
     setIsLoading(true);
@@ -213,16 +222,33 @@ function CommentSection({ postId, user }) {
         }
       );
 
-      setComments(comments.map(comment => 
-        comment._id === commentId
-          ? { 
-              ...comment, 
-              likes: response.data.isLiked 
-                ? [...(comment.likes || []), user._id]
-                : (comment.likes || []).filter(id => id !== user._id)
+      setComments(comments.map(comment => {
+        if (comment._id === commentId) {
+          return {
+            ...comment,
+            likes: response.data.isLiked 
+              ? [...(comment.likes || []), user._id]
+              : (comment.likes || []).filter(id => id !== user._id)
+          };
+        }
+        
+        if (comment.replies && comment.replies.length > 0) {
+          const updatedReplies = comment.replies.map(reply => {
+            if (reply._id === commentId) {
+              return {
+                ...reply,
+                likes: response.data.isLiked 
+                  ? [...(reply.likes || []), user._id]
+                  : (reply.likes || []).filter(id => id !== user._id)
+              };
             }
-          : comment
-      ));
+            return reply;
+          });
+          return { ...comment, replies: updatedReplies };
+        }
+        
+        return comment;
+      }));
       
       if (response.data.isLiked) {
         toast.success('Comment liked! ❤️');
@@ -235,16 +261,25 @@ function CommentSection({ postId, user }) {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    const now = new Date();
-    const diffInHours = Math.floor((now - date) / (1000 * 60 * 60));
+    const now = currentTime;
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
     
-    if (diffInHours < 1) {
+    if (diffInMinutes < 1) {
       return 'Just now';
-    } else if (diffInHours < 24) {
-      return `${diffInHours}h ago`;
+    } else if (diffInMinutes < 60) {
+      return `${diffInMinutes}m ago`;
     } else {
-      const diffInDays = Math.floor(diffInHours / 24);
-      return `${diffInDays}d ago`;
+      const diffInHours = Math.floor(diffInMinutes / 60);
+      if (diffInHours < 24) {
+        return `${diffInHours}h ago`;
+      } else {
+        const diffInDays = Math.floor(diffInHours / 24);
+        if (diffInDays < 7) {
+          return `${diffInDays}d ago`;
+        } else {
+          return date.toLocaleDateString();
+        }
+      }
     }
   };
 

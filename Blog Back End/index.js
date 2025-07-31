@@ -33,8 +33,7 @@ app.get('/', (req, res) => {
 });
 
 app.listen(port, () => {});
-
-const mongoUrl = process.env.MONGODB_URI;
+const mongoUrl = process.env.MONGODB_URI || 'mongodb+srv://kush:AdminPass123%21@blog-project.jbmtrys.mongodb.net/Blog-Project?retryWrites=true&w=majority&appName=Blog-Project';
 connectToMongoDb(mongoUrl)
 
 
