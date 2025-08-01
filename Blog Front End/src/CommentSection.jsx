@@ -278,17 +278,14 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         }
       );
 
+      // Update the state using the response data from backend
       setComments(comments.map(comment => {
         if (comment._id === commentId) {
           // Update main comment
-          const updatedLikes = response.data.isLiked 
-            ? [...(comment.likes || []).filter(id => id !== user._id), user._id]
-            : (comment.likes || []).filter(id => id !== user._id);
-          
           return {
             ...comment,
             isLiked: response.data.isLiked,
-            likes: updatedLikes
+            likes: Array(response.data.likesCount).fill(null) // Create array with correct length for count display
           };
         }
         
@@ -296,14 +293,10 @@ function CommentSection({ postId, user, onCommentCountChange }) {
           const updatedReplies = comment.replies.map(reply => {
             if (reply._id === commentId) {
               // Update reply
-              const updatedLikes = response.data.isLiked 
-                ? [...(reply.likes || []).filter(id => id !== user._id), user._id]
-                : (reply.likes || []).filter(id => id !== user._id);
-              
               return {
                 ...reply,
                 isLiked: response.data.isLiked,
-                likes: updatedLikes
+                likes: Array(response.data.likesCount).fill(null) // Create array with correct length for count display
               };
             }
             return reply;
