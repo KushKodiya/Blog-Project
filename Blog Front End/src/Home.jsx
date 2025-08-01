@@ -12,6 +12,8 @@ function Home({ user }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showCategories, setShowCategories] = useState(false);
+  const [showPopularPosts, setShowPopularPosts] = useState(false);
 
   useEffect(() => {
     fetchPosts();
@@ -75,6 +77,75 @@ function Home({ user }) {
 
   return (
     <div className="home-layout">
+      {/* Mobile Toggle Sections */}
+      <div className="mobile-sidebar-toggles">
+        <button 
+          className={`mobile-toggle-btn ${showCategories ? 'active' : ''}`}
+          onClick={() => setShowCategories(!showCategories)}
+        >
+          <svg className="toggle-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/>
+          </svg>
+          Categories
+          <svg className={`chevron ${showCategories ? 'open' : ''}`} viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        </button>
+        
+        <button 
+          className={`mobile-toggle-btn ${showPopularPosts ? 'active' : ''}`}
+          onClick={() => setShowPopularPosts(!showPopularPosts)}
+        >
+          <svg className="toggle-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
+          </svg>
+          Popular Posts
+          <svg className={`chevron ${showPopularPosts ? 'open' : ''}`} viewBox="0 0 24 24" fill="currentColor">
+            <path d="M7 10l5 5 5-5z"/>
+          </svg>
+        </button>
+      </div>
+
+      {/* Mobile Categories Section */}
+      <div className={`mobile-sidebar categories-mobile ${showCategories ? 'show' : ''}`}>
+        <div className="categories-section">
+          <h3>Categories</h3>
+          <div className="category-search">
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
+          <div className="category-list">
+            <button
+              className={`category-item ${selectedCategory === '' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('')}
+            >
+              All Categories
+            </button>
+            {categories
+              .filter(cat => cat.title.toLowerCase().includes(searchTerm.toLowerCase()))
+              .map(category => (
+                <button
+                  key={category._id}
+                  className={`category-item ${selectedCategory === category._id ? 'active' : ''}`}
+                  onClick={() => setSelectedCategory(category._id)}
+                >
+                  {category.title}
+                </button>
+              ))}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Popular Posts Section */}
+      <div className={`mobile-sidebar popular-mobile ${showPopularPosts ? 'show' : ''}`}>
+        <PopularPosts user={user} />
+      </div>
+      
       <div className="sidebar left-sidebar">
         <div className="categories-section">
           <h3>Categories</h3>
