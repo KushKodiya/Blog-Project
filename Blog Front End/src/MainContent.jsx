@@ -49,11 +49,23 @@ function MainContent({ user, selectedCategory, searchTerm }) {
   );
 
   if (isLoading) {
-    return <div className="loading">Loading posts...</div>;
+    return (
+      <div className="main-content">
+        <div className="home-container">
+          <div className="loading">Loading posts...</div>
+        </div>
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="error-message">{error}</div>;
+    return (
+      <div className="main-content">
+        <div className="home-container">
+          <div className="error-message">{error}</div>
+        </div>
+      </div>
+    );
   }
 
   return (
