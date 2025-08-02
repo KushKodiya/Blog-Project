@@ -11,8 +11,6 @@ function Home({ user }) {
 
   const handleCategoryChange = (categoryId) => {
     setSelectedCategory(categoryId);
-    // Only MainContent will re-render when selectedCategory changes
-    // CategorySection and PopularPosts will remain unchanged
   };
 
   const handleToggleCategories = () => {

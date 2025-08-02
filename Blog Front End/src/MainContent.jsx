@@ -21,14 +21,12 @@ function MainContent({ user, selectedCategory, searchTerm }) {
     fetchPosts();
   }, [selectedCategory, currentPage]);
 
-  // Reset to page 1 when category changes
   useEffect(() => {
     if (currentPage !== 1) {
       setCurrentPage(1);
     }
   }, [selectedCategory]);
 
-  // Scroll to top when posts are loaded (after page change)
   useEffect(() => {
     if (!isLoading && posts.length > 0) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -75,7 +73,6 @@ function MainContent({ user, selectedCategory, searchTerm }) {
   const handlePageChange = (newPage) => {
     if (newPage >= 1 && newPage <= pagination.totalPages) {
       setCurrentPage(newPage);
-      // Scroll to top immediately when page changes
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }, 100);

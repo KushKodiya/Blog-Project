@@ -329,7 +329,6 @@ body {
   border: 1px solid #c3e6cb;
 }
 
-/* Three-column layout for Home page */
 .home-layout {
   display: flex;
   gap: 2rem;
@@ -354,12 +353,11 @@ body {
 
 .main-content {
   flex: 1;
-  min-width: 0; /* Prevents flex items from overflowing */
+  min-width: 0;
   padding: 0;
   margin: 0;
 }
 
-/* Categories section styles */
 .categories-section {
   background: linear-gradient(135deg, #ffffff, #f8f9fa);
   border-radius: 16px;
@@ -437,7 +435,6 @@ body {
   box-shadow: 0 4px 16px rgba(0, 123, 255, 0.3);
 }
 
-/* Popular Posts Section */
 .popular-posts-section {
   width: 100%;
 }
@@ -635,7 +632,6 @@ body {
   font-weight: 500;
 }
 
-/* Mobile Responsiveness for Popular Posts */
 @media (max-width: 1200px) {
   .popular-posts-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -681,7 +677,6 @@ body {
   }
 }
 
-/* Responsive Design for Popular Posts */
 @media (max-width: 768px) {
   .popular-post-item {
     padding: 0.75rem;
@@ -751,7 +746,6 @@ body {
   }
 }
 
-/* Mobile Responsiveness */
 @media (max-width: 1200px) {
   .home-layout {
     flex-direction: column;
@@ -819,7 +813,6 @@ body {
   }
 }
 
-/* Improved Post Cards for Mobile */
 @media (max-width: 768px) {
   .post-card {
     margin-bottom: 1rem;
@@ -859,7 +852,6 @@ body {
   }
 }
 
-/* Ensure proper scrolling on mobile */
 @media (max-width: 768px) {
   .left-sidebar, .right-sidebar {
     overflow-x: hidden;
@@ -876,7 +868,6 @@ body {
   }
 }
 
-/* Comment Form */
 .comment-form {
   margin-bottom: 2rem;
   padding: 1.5rem;
@@ -942,7 +933,6 @@ body {
   transform: none;
 }
 
-/* Comments List Updated */
 .comments-list {
   display: flex;
   flex-direction: column;
@@ -964,7 +954,6 @@ body {
   transform: translateY(-1px);
 }
 
-/* Enhanced Comment and Reply Styles - Primary Section */
 .comment-header {
   display: flex;
   align-items: flex-start;
@@ -1003,7 +992,6 @@ body {
   display: inline-block;
 }
 
-/* Better Comment Content Spacing */
 .comment-content {
   margin-bottom: 1.5rem;
   padding-left: 0.5rem;
@@ -1017,7 +1005,6 @@ body {
   padding: 0.5rem 0;
 }
 
-/* Enhanced Reply Styles */
 .replies {
   margin-top: 2rem;
   margin-left: 0.5rem;
@@ -1064,7 +1051,6 @@ body {
   font-weight: bold;
 }
 
-/* Like Button Styles */
 .like-button-container {
   display: inline-flex;
   align-items: center;
@@ -1160,7 +1146,6 @@ body {
   text-align: center;
 }
 
-/* Post Actions Container */
 .post-actions {
   display: flex;
   align-items: center;
@@ -1181,7 +1166,6 @@ body {
   gap: 0.5rem;
 }
 
-/* Post Stats for User Posts */
 .post-stats {
   display: flex;
   align-items: center;
@@ -1193,7 +1177,6 @@ body {
   flex-wrap: wrap;
 }
 
-/* Enhanced Comment Section Formatting */
 .comment-section {
   margin-top: 2rem;
   padding: 2rem;
@@ -1218,7 +1201,6 @@ body {
   font-size: 1.1rem;
 }
 
-/* Enhanced Responsive Design for Like Buttons and Comments */
 @media (max-width: 768px) {
   .like-button {
     padding: 0.5rem 0.75rem;
@@ -1366,7 +1348,6 @@ body {
   }
 }
 
-/* Popular Posts List (Sidebar Layout) */
 .popular-posts-list {
   display: flex;
   flex-direction: column;
@@ -1495,5 +1476,3 @@ body {
   color: #007bff;
   font-weight: 500;
 }
-
-/* Popular Posts Grid (keeping existing for other layouts) */

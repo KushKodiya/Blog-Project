@@ -52,11 +52,9 @@ function CreatePost({ user, onPostCreated }) {
     setFormData(prev => ({
       ...prev,
       isPinned: checked,
-      // Clear category selection when pinning since it will be auto-assigned
       category: checked ? '' : prev.category
     }));
     
-    // Clear category and image errors if post is pinned
     if (checked && (errors.category || errors.image)) {
       setErrors(prev => ({
         ...prev,
@@ -73,7 +71,6 @@ function CreatePost({ user, onPostCreated }) {
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
       
-      // Clear image error when file is selected
       if (errors.image) {
         setErrors(prev => ({
           ...prev,
@@ -117,12 +114,10 @@ function CreatePost({ user, onPostCreated }) {
       newErrors.body = 'Content is required';
     }
     
-    // Category is only required if post is not pinned
     if (!formData.isPinned && !formData.category) {
       newErrors.category = 'Category is required';
     }
     
-    // Image is only required if post is not pinned
     if (!formData.isPinned && !imageFile) {
       newErrors.image = 'Image is required';
     }
@@ -142,7 +137,6 @@ function CreatePost({ user, onPostCreated }) {
     try {
       setIsSubmitting(true);
       
-      // Upload image only if one is provided
       let imageUrl = '';
       if (imageFile) {
         imageUrl = await uploadImage();

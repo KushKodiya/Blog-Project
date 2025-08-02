@@ -31,7 +31,6 @@ const createComment = async (req, res) => {
         await comment.save();
         await comment.populate('user', 'firstName lastName email');
 
-        // Add isLiked field for the current user (always false for new comments)
         const commentObj = comment.toObject();
         commentObj.isLiked = false;
 
@@ -50,7 +49,6 @@ const getCommentsByPost = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
-        const userId = req.user?._id; // Get current user ID if logged in
 
         const post = await Post.findById(postId);
         if (!post) {
@@ -66,7 +64,6 @@ const getCommentsByPost = async (req, res) => {
         .skip(skip)
         .limit(limit);
 
-        // Manually fetch replies for each comment to ensure likes field is included
         const commentsWithReplies = await Promise.all(
             comments.map(async (comment) => {
                 const replies = await Comment.find({ parentComment: comment._id })
@@ -79,14 +76,11 @@ const getCommentsByPost = async (req, res) => {
             })
         );
 
-        // Add like information for current user
         const commentsWithLikes = commentsWithReplies.map(comment => {
-            // Add like info for main comment
             if (userId) {
                 comment.isLiked = comment.likes.some(likeId => likeId.toString() === userId.toString());
             }
             
-            // Add like info for replies
             if (comment.replies && comment.replies.length > 0) {
                 comment.replies = comment.replies.map(reply => {
                     const replyObj = reply.toObject ? reply.toObject() : reply;
@@ -138,7 +132,6 @@ const updateComment = async (req, res) => {
 
         await comment.populate('user', 'firstName lastName email');
 
-        // Add isLiked field for the current user
         const commentObj = comment.toObject();
         commentObj.isLiked = comment.likes.some(likeId => likeId.toString() === userId.toString());
 

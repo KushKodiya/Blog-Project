@@ -156,13 +156,10 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         }
       );
 
-      // Update the comment in the state (handle both main comments and replies)
       setComments(comments.map(comment => {
         if (comment._id === commentId) {
-          // It's a main comment
           return response.data.comment;
         } else if (comment.replies && comment.replies.some(reply => reply._id === commentId)) {
-          // It's a reply, update it in the replies array
           return {
             ...comment,
             replies: comment.replies.map(reply => 
@@ -236,13 +233,10 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         }
       });
 
-      // Check if it's a main comment or a reply
       const updatedComments = comments.map(comment => {
         if (comment._id === commentId) {
-          // It's a main comment, remove it entirely
           return null;
         } else if (comment.replies && comment.replies.some(reply => reply._id === commentId)) {
-          // It's a reply, remove it from the replies array
           return {
             ...comment,
             replies: comment.replies.filter(reply => reply._id !== commentId)
@@ -278,25 +272,22 @@ function CommentSection({ postId, user, onCommentCountChange }) {
         }
       );
 
-      // Update the state using the response data from backend
       setComments(comments.map(comment => {
         if (comment._id === commentId) {
-          // Update main comment
           return {
             ...comment,
             isLiked: response.data.isLiked,
-            likes: Array(response.data.likesCount).fill(null) // Create array with correct length for count display
+            likes: Array(response.data.likesCount).fill(null)
           };
         }
         
         if (comment.replies && comment.replies.length > 0) {
           const updatedReplies = comment.replies.map(reply => {
             if (reply._id === commentId) {
-              // Update reply
               return {
                 ...reply,
                 isLiked: response.data.isLiked,
-                likes: Array(response.data.likesCount).fill(null) // Create array with correct length for count display
+                likes: Array(response.data.likesCount).fill(null)
               };
             }
             return reply;

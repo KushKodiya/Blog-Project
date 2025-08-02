@@ -104,20 +104,20 @@ body {
   flex-direction: column;
   gap: 2rem;
   position: sticky;
-  top: 80px; /* Account for navbar height */
-  height: calc(100vh - 100px); /* Full viewport height minus navbar and padding */
-  overflow-y: auto; /* Allow scrolling within sidebar if content is too long */
-  align-self: flex-start; /* Prevent sidebar from stretching */
+  top: 80px; 
+  height: calc(100vh - 100px); 
+  overflow-y: auto; 
+  align-self: flex-start; 
 }
 
 .right-sidebar {
   width: 250px;
   flex-shrink: 0;
   position: sticky;
-  top: 80px; /* Account for navbar height */
-  height: calc(100vh - 100px); /* Full viewport height minus navbar and padding */
-  overflow-y: auto; /* Allow scrolling within sidebar if content is too long */
-  align-self: flex-start; /* Prevent sidebar from stretching */
+  top: 80px; 
+  height: calc(100vh - 100px); 
+  overflow-y: auto; 
+  align-self: flex-start; 
 }
 
 .sidebar:not(.right-sidebar) .popular-posts-section {
@@ -137,12 +137,12 @@ body {
   flex: 1;
   padding: 0;
   max-width: none;
-  min-height: 100vh; /* Ensure main content can scroll if needed */
-  overflow: visible; /* Allow natural scrolling */
-  transition: all 0.3s ease; /* Smooth transitions when content changes */
+  min-height: 100vh; 
+  overflow: visible; 
+  transition: all 0.3s ease; 
 }
 
-/* Main content loading and error states - maintain layout stability */
+
 .main-content .loading,
 .main-content .error-message {
   text-align: center;
@@ -310,7 +310,7 @@ body {
   gap: 2rem !important;
   max-width: 1000px !important;
   margin: 0 auto !important;
-  min-height: 400px; /* Maintain minimum height for layout stability */
+  min-height: 400px;
 }
 
 .post-card {
@@ -406,7 +406,7 @@ body {
   padding: 3rem 2rem;
   font-size: 1.1rem;
   color: #666;
-  min-height: 300px; /* Ensure consistent height to prevent layout shifts */
+  min-height: 300px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -588,7 +588,6 @@ body {
   border: 2px solid #e0e0e0;
 }
 
-/* Modern Toggle Switch */
 .toggle-switch-container {
   margin-bottom: 1.5rem;
   text-align: left;
@@ -658,7 +657,6 @@ body {
   font-weight: 500;
 }
 
-/* Pinned Posts Styling */
 .pinned-post {
   border: 2px solid transparent;
   background: linear-gradient(white, white) padding-box,
@@ -692,7 +690,6 @@ body {
   position: relative;
 }
 
-/* Pinned posts without images get a gradient background */
 .pinned-post:not(:has(.post-image)) .post-card-link {
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
   border-radius: 12px;
@@ -1325,7 +1322,7 @@ body {
   color: #6c757d;
 }
 
-/* Mobile sidebar toggles */
+
 .mobile-sidebar-toggles {
   display: none;
   flex-direction: column;
@@ -1403,7 +1400,6 @@ body {
   }
 }
 
-/* Enhanced Comment Section Styles */
 .comment-section {
   background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
   border-radius: 20px;

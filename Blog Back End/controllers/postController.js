@@ -31,23 +31,19 @@ const createPost = async (req, res) => {
             return res.status(400).json({ error: 'Content is required' });
         }
         
-        // Only admin users can pin posts
         const canPin = req.user.role === 'admin' || req.user.role === 'Admin';
         const finalIsPinned = canPin ? isPinned : false;
         
-        // Image is only required for non-pinned posts
         if (!finalIsPinned && (!img || !img.trim())) {
             return res.status(400).json({ error: 'Image is required' });
         }
         
-        // If post is pinned, automatically assign to "Important" category
         let finalCategory = category;
         if (finalIsPinned) {
             const importantCategory = await Category.findOne({ title: 'Important' });
             if (importantCategory) {
                 finalCategory = importantCategory._id;
             } else {
-                // If Important category doesn't exist, create it
                 const newImportantCategory = new Category({
                     title: 'Important',
                     isActive: true
@@ -62,7 +58,6 @@ const createPost = async (req, res) => {
         const newPost = new Post({
             title,
             body,
-            img: img || null, // Allow null for pinned posts without images
             user: req.user._id,
             category: finalCategory,
             isPinned: finalIsPinned
@@ -90,12 +85,10 @@ const getAllPosts = async (req, res) => {
             filter.category = category;
         }
         
-        // Convert page and limit to numbers
         const pageNumber = parseInt(page);
         const limitNumber = parseInt(limit);
         const skipNumber = (pageNumber - 1) * limitNumber;
         
-        // Get total count for pagination info
         const totalPosts = await Post.countDocuments(filter);
         const totalPages = Math.ceil(totalPosts / limitNumber);
         
@@ -298,7 +291,6 @@ const getPopularPosts = async (req, res) => {
         const { period = 'week', limit = 5 } = req.query;
         const userId = req.user?._id;
         
-        // Calculate date range based on period
         const now = new Date();
         let startDate;
         
@@ -316,7 +308,6 @@ const getPopularPosts = async (req, res) => {
                 startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
         }
 
-        // Aggregate posts with like counts within the time period
         const popularPosts = await Post.aggregate([
             {
                 $match: {

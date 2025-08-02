@@ -13,7 +13,6 @@ const getActiveCategories = async (req, res) => {
     try {
         const categories = await Category.find({ 
             isActive: true, 
-            title: { $ne: 'Important' } // Exclude Important category from dropdown
         }).sort({ title: 1 });
         res.json(categories);
     } catch (error) {
