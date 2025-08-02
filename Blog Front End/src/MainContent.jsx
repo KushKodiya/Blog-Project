@@ -114,7 +114,15 @@ function MainContent({ user, selectedCategory, searchTerm }) {
             </div>
           ) : (
             filteredPosts.map(post => (
-              <div key={post._id} className="post-card">
+              <div key={post._id} className={`post-card ${post.isPinned ? 'pinned-post' : ''}`}>
+                {post.isPinned && (
+                  <div className="pinned-badge">
+                    <svg className="pin-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M14,4V6H12V4H8V6L12,10L16,6V4H14M12,2H16A2,2 0 0,1 18,4V8L12,14L6,8V4A2,2 0 0,1 8,2H12Z"/>
+                    </svg>
+                    Pinned
+                  </div>
+                )}
                 <Link to={`/post/${post.slug || post._id}`} className="post-card-link">
                   <div className="post-header">
                     <h2>{post.title}</h2>

@@ -207,15 +207,20 @@ function ManageCategories({ user }) {
                 required
               />
             </div>
-            <div className="form-group">
-              <label>
+            <div className="toggle-switch-container">
+              <label>Active Status:</label>
+              <div className="toggle-switch">
                 <input
                   type="checkbox"
+                  id="isActive"
+                  className="toggle-switch-input"
                   checked={newCategory.isActive}
                   onChange={(e) => setNewCategory({ ...newCategory, isActive: e.target.checked })}
                 />
-                Active
-              </label>
+                <span className="toggle-switch-text">
+                  {newCategory.isActive ? 'Active' : 'Inactive'}
+                </span>
+              </div>
             </div>
             <button type="submit" className="btn btn-primary">Create Category</button>
           </form>

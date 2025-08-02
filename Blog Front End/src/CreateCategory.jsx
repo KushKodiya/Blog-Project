@@ -5,8 +5,9 @@ import { API_BASE_URL } from './config';
 
 function CreateCategory({ user }) {
   const [formData, setFormData] = useState({
-    name: '',
-    description: ''
+    title: '',
+    description: '',
+    isActive: true
   });
   const [isLoading, setIsLoading] = useState(false);
 
@@ -25,7 +26,10 @@ function CreateCategory({ user }) {
       const token = localStorage.getItem('token');
       const response = await axios.post(
         `${API_BASE_URL}/api/categories`,
-        formData,
+        {
+          title: formData.title,
+          isActive: formData.isActive
+        },
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -35,7 +39,7 @@ function CreateCategory({ user }) {
       );
 
       toast.success('Category created successfully!');
-      setFormData({ name: '', description: '' });
+      setFormData({ title: '', description: '', isActive: true });
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to create category');
     } finally {
@@ -53,12 +57,12 @@ function CreateCategory({ user }) {
       
       <form onSubmit={handleSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Category Name:</label>
+          <label htmlFor="title">Category Title:</label>
           <input
             type="text"
-            id="name"
-            name="name"
-            value={formData.name}
+            id="title"
+            name="title"
+            value={formData.title}
             onChange={handleChange}
             required
             disabled={isLoading}
@@ -75,6 +79,23 @@ function CreateCategory({ user }) {
             rows="4"
             disabled={isLoading}
           />
+        </div>
+
+        <div className="toggle-switch-container">
+          <label>Active Status:</label>
+          <div className="toggle-switch">
+            <input
+              type="checkbox"
+              id="isActive"
+              className="toggle-switch-input"
+              checked={formData.isActive}
+              onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
+              disabled={isLoading}
+            />
+            <span className="toggle-switch-text">
+              {formData.isActive ? 'Active' : 'Inactive'}
+            </span>
+          </div>
         </div>
 
         <button 

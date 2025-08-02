@@ -27,7 +27,7 @@ const postSchema = new mongoose.Schema({
     },
     img: {
         type: String,
-        required: true,
+        required: false,
     },
     user: {
         type: mongoose.Schema.Types.ObjectId,
@@ -38,6 +38,10 @@ const postSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
         required: true,
+    },
+    isPinned: {
+        type: Boolean,
+        default: false,
     }
 }, {
     timestamps: true,

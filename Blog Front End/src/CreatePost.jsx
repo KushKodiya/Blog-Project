@@ -10,7 +10,8 @@ function CreatePost({ user, onPostCreated }) {
     title: '',
     body: '',
     img: '',
-    category: ''
+    category: '',
+    isPinned: false
   });
   
   const [categories, setCategories] = useState([]);
@@ -43,6 +44,24 @@ function CreatePost({ user, onPostCreated }) {
       setErrors(prev => ({
         ...prev,
         [name]: ''
+      }));
+    }
+  };
+
+  const handlePinnedChange = (checked) => {
+    setFormData(prev => ({
+      ...prev,
+      isPinned: checked,
+      // Clear category selection when pinning since it will be auto-assigned
+      category: checked ? '' : prev.category
+    }));
+    
+    // Clear category and image errors if post is pinned
+    if (checked && (errors.category || errors.image)) {
+      setErrors(prev => ({
+        ...prev,
+        category: '',
+        image: ''
       }));
     }
   };
@@ -98,11 +117,13 @@ function CreatePost({ user, onPostCreated }) {
       newErrors.body = 'Content is required';
     }
     
-    if (!formData.category) {
+    // Category is only required if post is not pinned
+    if (!formData.isPinned && !formData.category) {
       newErrors.category = 'Category is required';
     }
     
-    if (!imageFile) {
+    // Image is only required if post is not pinned
+    if (!formData.isPinned && !imageFile) {
       newErrors.image = 'Image is required';
     }
     
@@ -121,15 +142,19 @@ function CreatePost({ user, onPostCreated }) {
     try {
       setIsSubmitting(true);
       
-      // Image is now required, so always upload
-      const imageUrl = await uploadImage();
+      // Upload image only if one is provided
+      let imageUrl = '';
+      if (imageFile) {
+        imageUrl = await uploadImage();
+      }
       
       const token = localStorage.getItem('token');
       const postData = {
         title: formData.title,
         body: formData.body,
         img: imageUrl,
-        category: formData.category
+        category: formData.category,
+        isPinned: formData.isPinned
       };
       
       const response = await axios.post(`${API_BASE_URL}/api/posts`, postData, {
@@ -141,7 +166,7 @@ function CreatePost({ user, onPostCreated }) {
       
       toast.success('Post created successfully!');
       
-      setFormData({ title: '', body: '', img: '', category: '' });
+      setFormData({ title: '', body: '', img: '', category: '', isPinned: false });
       setImageFile(null);
       setImagePreview('');
       
@@ -198,21 +223,27 @@ function CreatePost({ user, onPostCreated }) {
             value={formData.category}
             onChange={handleChange}
             className={errors.category ? 'error' : ''}
-            disabled={isSubmitting}
+            disabled={isSubmitting || formData.isPinned}
             required
           >
-            <option value="">Select a category</option>
-            {categories.map(category => (
-              <option key={category._id} value={category._id}>
-                {category.title}
-              </option>
-            ))}
+            <option value="">
+              {formData.isPinned ? 'Auto-assigned to Important' : 'Select a category'}
+            </option>
+            {!formData.isPinned && categories
+              .filter(category => category.title !== 'Important')
+              .map(category => (
+                <option key={category._id} value={category._id}>
+                  {category.title}
+                </option>
+              ))}
           </select>
           {errors.category && <span className="error-message">{errors.category}</span>}
         </div>
 
         <div className="form-group">
-          <label htmlFor="image">Image</label>
+          <label htmlFor="image">
+            Image {formData.isPinned ? '(Optional)' : '(Required)'}
+          </label>
           <input
             type="file"
             id="image"
@@ -221,7 +252,7 @@ function CreatePost({ user, onPostCreated }) {
             onChange={handleImageChange}
             disabled={isSubmitting || isUploading}
             className={errors.image ? 'error' : ''}
-            required
+            required={!formData.isPinned}
           />
           {errors.image && <span className="error-message">{errors.image}</span>}
           {imagePreview && (
@@ -245,6 +276,25 @@ function CreatePost({ user, onPostCreated }) {
           />
           {errors.body && <span className="error-message">{errors.body}</span>}
         </div>
+
+        {(user.role === 'admin' || user.role === 'Admin') && (
+          <div className="toggle-switch-container">
+            <label>Pin Post to Top:</label>
+            <div className="toggle-switch">
+              <input
+                type="checkbox"
+                id="isPinned"
+                className="toggle-switch-input"
+                checked={formData.isPinned}
+                onChange={(e) => handlePinnedChange(e.target.checked)}
+                disabled={isSubmitting}
+              />
+              <span className="toggle-switch-text">
+                {formData.isPinned ? 'Pinned' : 'Not Pinned'}
+              </span>
+            </div>
+          </div>
+        )}
 
         <button 
           type="submit" 

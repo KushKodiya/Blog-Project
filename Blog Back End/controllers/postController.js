@@ -1,6 +1,7 @@
 const Post = require('../models/post');
 const Like = require('../models/like');
 const Comment = require('../models/comment');
+const Category = require('../models/category');
 
 const uploadImage = (req, res) => {
     try {
@@ -20,7 +21,7 @@ const uploadImage = (req, res) => {
 
 const createPost = async (req, res) => {
     try {
-        const { title, body, img, category } = req.body;
+        const { title, body, img, category, isPinned } = req.body;
         
         if (!title || !title.trim()) {
             return res.status(400).json({ error: 'Title is required' });
@@ -30,20 +31,41 @@ const createPost = async (req, res) => {
             return res.status(400).json({ error: 'Content is required' });
         }
         
-        if (!img || !img.trim()) {
+        // Only admin users can pin posts
+        const canPin = req.user.role === 'admin' || req.user.role === 'Admin';
+        const finalIsPinned = canPin ? isPinned : false;
+        
+        // Image is only required for non-pinned posts
+        if (!finalIsPinned && (!img || !img.trim())) {
             return res.status(400).json({ error: 'Image is required' });
         }
         
-        if (!category) {
+        // If post is pinned, automatically assign to "Important" category
+        let finalCategory = category;
+        if (finalIsPinned) {
+            const importantCategory = await Category.findOne({ title: 'Important' });
+            if (importantCategory) {
+                finalCategory = importantCategory._id;
+            } else {
+                // If Important category doesn't exist, create it
+                const newImportantCategory = new Category({
+                    title: 'Important',
+                    isActive: true
+                });
+                const savedCategory = await newImportantCategory.save();
+                finalCategory = savedCategory._id;
+            }
+        } else if (!category) {
             return res.status(400).json({ error: 'Category is required' });
         }
         
         const newPost = new Post({
             title,
             body,
-            img,
+            img: img || null, // Allow null for pinned posts without images
             user: req.user._id,
-            category
+            category: finalCategory,
+            isPinned: finalIsPinned
         });
         
         const savedPost = await newPost.save();
@@ -80,7 +102,7 @@ const getAllPosts = async (req, res) => {
         const posts = await Post.find(filter)
             .populate('user', 'firstName lastName email')
             .populate('category', 'title isActive')
-            .sort({ createdAt: -1 })
+            .sort({ isPinned: -1, createdAt: -1 })
             .skip(skipNumber)
             .limit(limitNumber);
         

@@ -588,6 +588,126 @@ body {
   border: 2px solid #e0e0e0;
 }
 
+/* Modern Toggle Switch */
+.toggle-switch-container {
+  margin-bottom: 1.5rem;
+  text-align: left;
+}
+
+.toggle-switch-container > label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.toggle-switch {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.toggle-switch-input {
+  position: relative;
+  width: 50px;
+  height: 26px;
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: #e2e8f0;
+  border-radius: 13px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  outline: none;
+  border: none;
+  flex-shrink: 0;
+}
+
+.toggle-switch-input:checked {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.toggle-switch-input::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 22px;
+  height: 22px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch-input:checked::before {
+  transform: translateX(24px);
+}
+
+.toggle-switch-input:focus {
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.toggle-switch-input:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.toggle-switch-text {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: 500;
+}
+
+/* Pinned Posts Styling */
+.pinned-post {
+  border: 2px solid transparent;
+  background: linear-gradient(white, white) padding-box,
+              linear-gradient(135deg, #667eea 0%, #764ba2 100%) border-box;
+  position: relative;
+}
+
+.pinned-badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  z-index: 10;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.pin-icon {
+  width: 12px;
+  height: 12px;
+}
+
+.pinned-post .post-card-link {
+  position: relative;
+}
+
+/* Pinned posts without images get a gradient background */
+.pinned-post:not(:has(.post-image)) .post-card-link {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+  border-radius: 12px;
+  padding: 16px;
+  margin: -8px;
+}
+
+.pinned-post:not(:has(.post-image)) .post-header {
+  margin-bottom: 12px;
+}
+
+.pinned-post:not(:has(.post-image)) .post-body {
+  margin-top: 8px;
+}
+
 .general-error {
   background-color: #f8d7da;
   border: 1px solid #f5c6cb;

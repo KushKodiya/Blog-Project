@@ -11,7 +11,10 @@ const getAllCategories = async (req, res) => {
 
 const getActiveCategories = async (req, res) => {
     try {
-        const categories = await Category.find({ isActive: true }).sort({ title: 1 });
+        const categories = await Category.find({ 
+            isActive: true, 
+            title: { $ne: 'Important' } // Exclude Important category from dropdown
+        }).sort({ title: 1 });
         res.json(categories);
     } catch (error) {
         res.status(500).json({ error: error.message });
