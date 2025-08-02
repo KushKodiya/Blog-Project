@@ -22,6 +22,18 @@ const createPost = async (req, res) => {
     try {
         const { title, body, img, category } = req.body;
         
+        if (!title || !title.trim()) {
+            return res.status(400).json({ error: 'Title is required' });
+        }
+        
+        if (!body || !body.trim()) {
+            return res.status(400).json({ error: 'Content is required' });
+        }
+        
+        if (!img || !img.trim()) {
+            return res.status(400).json({ error: 'Image is required' });
+        }
+        
         if (!category) {
             return res.status(400).json({ error: 'Category is required' });
         }
@@ -48,7 +60,7 @@ const createPost = async (req, res) => {
 
 const getAllPosts = async (req, res) => {
     try {
-        const { category } = req.query;
+        const { category, page = 1, limit = 5 } = req.query;
         const userId = req.user ? req.user._id : null;
         let filter = {};
         
@@ -56,10 +68,21 @@ const getAllPosts = async (req, res) => {
             filter.category = category;
         }
         
+        // Convert page and limit to numbers
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+        const skipNumber = (pageNumber - 1) * limitNumber;
+        
+        // Get total count for pagination info
+        const totalPosts = await Post.countDocuments(filter);
+        const totalPages = Math.ceil(totalPosts / limitNumber);
+        
         const posts = await Post.find(filter)
             .populate('user', 'firstName lastName email')
             .populate('category', 'title isActive')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skipNumber)
+            .limit(limitNumber);
         
         const postsWithLikes = await Promise.all(posts.map(async (post) => {
             const postObj = post.toObject();
@@ -82,7 +105,17 @@ const getAllPosts = async (req, res) => {
             return postObj;
         }));
         
-        res.json(postsWithLikes);
+        res.json({
+            posts: postsWithLikes,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: totalPages,
+                totalPosts: totalPosts,
+                hasNextPage: pageNumber < totalPages,
+                hasPrevPage: pageNumber > 1,
+                limit: limitNumber
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -200,7 +233,12 @@ const updatePost = async (req, res) => {
 
         if (title) post.title = title;
         if (body) post.body = body;
-        if (img !== undefined) post.img = img;
+        if (img !== undefined) {
+            if (img === '' || img === null) {
+                return res.status(400).json({ error: 'Image is required and cannot be empty' });
+            }
+            post.img = img;
+        }
 
         const updatedPost = await post.save();
         await updatedPost.populate('user', 'firstName lastName email');

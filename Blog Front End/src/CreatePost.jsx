@@ -53,6 +53,14 @@ function CreatePost({ user, onPostCreated }) {
       setImageFile(file);
       const previewUrl = URL.createObjectURL(file);
       setImagePreview(previewUrl);
+      
+      // Clear image error when file is selected
+      if (errors.image) {
+        setErrors(prev => ({
+          ...prev,
+          image: ''
+        }));
+      }
     }
   };
 
@@ -94,6 +102,10 @@ function CreatePost({ user, onPostCreated }) {
       newErrors.category = 'Category is required';
     }
     
+    if (!imageFile) {
+      newErrors.image = 'Image is required';
+    }
+    
     return newErrors;
   };
 
@@ -109,10 +121,8 @@ function CreatePost({ user, onPostCreated }) {
     try {
       setIsSubmitting(true);
       
-      let imageUrl = '';
-      if (imageFile) {
-        imageUrl = await uploadImage();
-      }
+      // Image is now required, so always upload
+      const imageUrl = await uploadImage();
       
       const token = localStorage.getItem('token');
       const postData = {
@@ -202,7 +212,7 @@ function CreatePost({ user, onPostCreated }) {
         </div>
 
         <div className="form-group">
-          <label htmlFor="image">Image (optional)</label>
+          <label htmlFor="image">Image</label>
           <input
             type="file"
             id="image"
@@ -210,7 +220,10 @@ function CreatePost({ user, onPostCreated }) {
             accept="image/*"
             onChange={handleImageChange}
             disabled={isSubmitting || isUploading}
+            className={errors.image ? 'error' : ''}
+            required
           />
+          {errors.image && <span className="error-message">{errors.image}</span>}
           {imagePreview && (
             <div className="image-preview">
               <img src={imagePreview} alt="Preview" />

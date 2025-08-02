@@ -8,10 +8,32 @@ function MainContent({ user, selectedCategory, searchTerm }) {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalPosts: 0,
+    hasNextPage: false,
+    hasPrevPage: false
+  });
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchPosts();
+  }, [selectedCategory, currentPage]);
+
+  // Reset to page 1 when category changes
+  useEffect(() => {
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
   }, [selectedCategory]);
+
+  // Scroll to top when posts are loaded (after page change)
+  useEffect(() => {
+    if (!isLoading && posts.length > 0) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [posts, isLoading]);
 
   const fetchPosts = async () => {
     try {
@@ -19,12 +41,14 @@ function MainContent({ user, selectedCategory, searchTerm }) {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      let url = `${API_BASE_URL}/api/posts`;
+      let url = `${API_BASE_URL}/api/posts?page=${currentPage}&limit=5`;
       if (selectedCategory) {
-        url += `?category=${selectedCategory}`;
+        url += `&category=${selectedCategory}`;
       }
       const response = await axios.get(url, { headers });
-      setPosts(response.data);
+      
+      setPosts(response.data.posts);
+      setPagination(response.data.pagination);
     } catch (error) {
       setError('Failed to load posts');
     } finally {
@@ -47,6 +71,16 @@ function MainContent({ user, selectedCategory, searchTerm }) {
     post.body.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (post.category && post.category.title.toLowerCase().includes(searchTerm.toLowerCase()))
   );
+
+  const handlePageChange = (newPage) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      setCurrentPage(newPage);
+      // Scroll to top immediately when page changes
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }, 100);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -135,6 +169,28 @@ function MainContent({ user, selectedCategory, searchTerm }) {
             ))
           )}
         </div>
+        
+        {/* Pagination Controls */}
+        {pagination.totalPages > 1 && (
+          <div className="pagination">
+            <div className="pagination-info">
+              <span className="page-numbers">
+                {Array.from({ length: pagination.totalPages }, (_, i) => i + 1).map(pageNum => (
+                  <button
+                    key={pageNum}
+                    className={`page-number ${pageNum === currentPage ? 'active' : ''}`}
+                    onClick={() => handlePageChange(pageNum)}
+                  >
+                    {pageNum}
+                  </button>
+                ))}
+              </span>
+              <span className="page-info">
+                Page {pagination.currentPage} of {pagination.totalPages} 
+              </span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
