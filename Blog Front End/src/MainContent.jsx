@@ -122,7 +122,6 @@ function MainContent({ user, selectedCategory, searchTerm }) {
                   </div>
                 )}
                 
-                {/* Image Carousel for posts with images - outside Link to prevent navigation conflicts */}
                 {(post.images && post.images.length > 0) ? (
                   <div className="post-image-container">
                     <ImageCarousel 
@@ -184,7 +183,6 @@ function MainContent({ user, selectedCategory, searchTerm }) {
           )}
         </div>
         
-        {/* Pagination Controls */}
         {pagination.totalPages > 1 && (
           <div className="pagination">
             <div className="pagination-info">

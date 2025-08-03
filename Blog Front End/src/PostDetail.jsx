@@ -55,7 +55,6 @@ function PostDetail({ user }) {
 
   return (
     <div className="post-detail">
-      {/* Display images using carousel */}
       {(post.images && post.images.length > 0) ? (
         <ImageCarousel 
           images={post.images.map(img => `${API_BASE_URL}${img}`)} 

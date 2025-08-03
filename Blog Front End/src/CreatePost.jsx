@@ -18,8 +18,8 @@ function CreatePost({ user, onPostCreated }) {
   });
   
   const [categories, setCategories] = useState([]);
-  const [imageItems, setImageItems] = useState([]); // Array of {id, file, preview}
-  const [reorderCounter, setReorderCounter] = useState(0); // Force re-render counter
+  const [imageItems, setImageItems] = useState([]);
+  const [reorderCounter, setReorderCounter] = useState(0);
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -28,17 +28,15 @@ function CreatePost({ user, onPostCreated }) {
     fetchCategories();
   }, []);
 
-  // Cleanup effect for object URLs - only on component unmount
   useEffect(() => {
     return () => {
-      // Only revoke URLs when component unmounts
       imageItems.forEach(item => {
         if (item && item.preview) {
           URL.revokeObjectURL(item.preview);
         }
       });
     };
-  }, []); // Empty dependency array - only runs on mount/unmount
+  }, []);
 
   const fetchCategories = async () => {
     try {
@@ -82,14 +80,12 @@ function CreatePost({ user, onPostCreated }) {
   const handleImageChange = (e) => {
     const files = Array.from(e.target.files);
     if (files.length > 0) {
-      // Create new image items with unique IDs
       const newImageItems = files.map((file, index) => ({
-        id: Date.now() + index, // Unique ID for each image
+        id: Date.now() + index,
         file: file,
         preview: URL.createObjectURL(file)
       }));
       
-      // Add new items to existing ones
       const updatedItems = [...imageItems, ...newImageItems];
       setImageItems(updatedItems);
       
@@ -101,18 +97,15 @@ function CreatePost({ user, onPostCreated }) {
       }
     }
     
-    // Reset the input so the same file can be selected again if needed
     e.target.value = '';
   };
 
   const removeImage = (indexToRemove) => {
-    // Get the item to remove and revoke its object URL
     const itemToRemove = imageItems[indexToRemove];
     if (itemToRemove) {
       URL.revokeObjectURL(itemToRemove.preview);
     }
     
-    // Remove the item at the specified index
     const updatedItems = imageItems.filter((_, index) => index !== indexToRemove);
     setImageItems(updatedItems);
   };
@@ -120,13 +113,12 @@ function CreatePost({ user, onPostCreated }) {
   const reorderImages = (dragIndex, hoverIndex) => {
     const updatedItems = [...imageItems];
     
-    // Move the dragged item to the new position
     const draggedItem = updatedItems[dragIndex];
     updatedItems.splice(dragIndex, 1);
     updatedItems.splice(hoverIndex, 0, draggedItem);
     
     setImageItems(updatedItems);
-    setReorderCounter(prev => prev + 1); // Force carousel re-mount
+    setReorderCounter(prev => prev + 1);
   };
 
   const uploadImages = async () => {
@@ -198,7 +190,7 @@ function CreatePost({ user, onPostCreated }) {
         title: formData.title,
         body: formData.body,
         images: imageUrls,
-        img: imageUrls.length > 0 ? imageUrls[0] : '', // For backward compatibility
+        img: imageUrls.length > 0 ? imageUrls[0] : '',
         category: formData.category,
         isPinned: formData.isPinned
       };
@@ -315,7 +307,6 @@ function CreatePost({ user, onPostCreated }) {
           
           {errors.image && <span className="error-message">{errors.image}</span>}
           
-          {/* Image Manager for selected images */}
           {imageItems.length > 0 && (
             <ImageManager
               images={imageItems.map(item => item.preview)}
@@ -325,7 +316,6 @@ function CreatePost({ user, onPostCreated }) {
             />
           )}
           
-          {/* Carousel Preview */}
           {imageItems.length > 0 && (
             <div className="image-preview-section">
               <h4>Preview:</h4>

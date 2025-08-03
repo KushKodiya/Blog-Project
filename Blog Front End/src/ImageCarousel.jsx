@@ -4,14 +4,12 @@ import './ImageCarousel.css';
 const ImageCarousel = ({ images, alt = "Post image", showThumbnails = true }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Reset to first image whenever images array changes (simpler approach)
   useEffect(() => {
     if (!images || images.length === 0) {
       setCurrentIndex(0);
       return;
     }
 
-    // Always reset to first image when images change (during reordering)
     setCurrentIndex(0);
   }, [images]);
 
@@ -19,7 +17,6 @@ const ImageCarousel = ({ images, alt = "Post image", showThumbnails = true }) =>
     return null;
   }
 
-  // If only one image, show simple image display
   if (images.length === 1) {
     return (
       <div className="single-image-container" onClick={(e) => e.stopPropagation()}>

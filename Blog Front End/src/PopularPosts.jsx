@@ -84,7 +84,6 @@ function PopularPosts({ user }) {
               </div>
               
               <Link to={`/post/${post.slug || post._id}`} className="popular-post-content">
-                {/* Show first image as preview, with indicator if multiple images */}
                 {(post.images && post.images.length > 0) ? (
                   <div className="popular-post-image">
                     <img 

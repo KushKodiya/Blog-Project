@@ -13,16 +13,24 @@ import UserPosts from './UserPosts';
 function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const savedToken = localStorage.getItem('token');
     const savedUser = localStorage.getItem('user');
     
     if (savedToken && savedUser) {
-      const userData = JSON.parse(savedUser);
-      setToken(savedToken);
-      setUser(userData);
+      try {
+        const userData = JSON.parse(savedUser);
+        setToken(savedToken);
+        setUser(userData);
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
+    setIsLoading(false);
   }, []);
 
   const handleLogin = (userData, authToken) => {
@@ -77,43 +85,56 @@ function App() {
         </nav>
 
         <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Home user={user} />} />
-            <Route 
-              path="/login" 
-              element={
-                user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />
-              } 
-            />
-            <Route 
-              path="/signup" 
-              element={
-                user ? <Navigate to="/" /> : <Signup onSignup={handleSignup} />
-              } 
-            />
-            <Route 
-              path="/create-post" 
-              element={
-                user ? <CreatePost user={user} /> : <Navigate to="/login" />
-              } 
-            />
-            <Route 
-              path="/your-posts" 
-              element={
-                user ? <UserPosts user={user} /> : <Navigate to="/login" />
-              } 
-            />
-            <Route 
-              path="/post/:slug" 
-              element={<PostDetail user={user} />} 
-            />
-            <Route 
-              path="/manage-categories" 
-              element={
-                user && (user.role === 'admin' || user.role === 'Admin') ? <ManageCategories user={user} /> : <Navigate to="/login" />
-              } 
-            />
-          </Routes>
+          {isLoading ? (
+            <div className="loading-container" style={{ 
+              display: 'flex', 
+              justifyContent: 'center', 
+              alignItems: 'center', 
+              height: '50vh',
+              fontSize: '1.1rem',
+              color: '#666'
+            }}>
+              Loading...
+            </div>
+          ) : (
+            <Routes>
+              <Route path="/" element={<Home user={user} />} />
+              <Route 
+                path="/login" 
+                element={
+                  user ? <Navigate to="/" /> : <Login onLogin={handleLogin} />
+                } 
+              />
+              <Route 
+                path="/signup" 
+                element={
+                  user ? <Navigate to="/" /> : <Signup onSignup={handleSignup} />
+                } 
+              />
+              <Route 
+                path="/create-post" 
+                element={
+                  user ? <CreatePost user={user} /> : <Navigate to="/login" />
+                } 
+              />
+              <Route 
+                path="/your-posts" 
+                element={
+                  user ? <UserPosts user={user} /> : <Navigate to="/login" />
+                } 
+              />
+              <Route 
+                path="/post/:slug" 
+                element={<PostDetail user={user} />} 
+              />
+              <Route 
+                path="/manage-categories" 
+                element={
+                  user && (user.role === 'admin' || user.role === 'Admin') ? <ManageCategories user={user} /> : <Navigate to="/login" />
+                } 
+              />
+            </Routes>
+          )}
         </main>
         
         <ToastContainer

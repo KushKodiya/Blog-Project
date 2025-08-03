@@ -23,7 +23,6 @@ function Home({ user }) {
 
   return (
     <div className="home-layout">
-      {/* Desktop Sidebar (Categories) */}
       <div className="sidebar">
         <CategorySection 
           selectedCategory={selectedCategory}
@@ -32,7 +31,6 @@ function Home({ user }) {
           onToggleCategories={handleToggleCategories}
         />
 
-        {/* Popular Posts in Sidebar (Mobile) */}
         <div className="popular-posts-section">
           <div className="section-toggle" onClick={handleTogglePopularPosts}>
             <h3>Popular Posts</h3>
@@ -52,7 +50,6 @@ function Home({ user }) {
         searchTerm={searchTerm}
       />
 
-      {/* Desktop Popular Posts Sidebar */}
       <div className="sidebar right-sidebar">
         <PopularPosts user={user} />
       </div>

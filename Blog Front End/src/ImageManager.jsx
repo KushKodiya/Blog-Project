@@ -8,7 +8,6 @@ const ImageManager = ({ images, imageItems, onRemove, onReorder }) => {
     return null;
   }
 
-  // Use imageItems if available (with stable IDs), otherwise fall back to images array
   const itemsToRender = imageItems || images.map((img, index) => ({ id: index, preview: img }));
 
   const handleDragStart = (e, index) => {
@@ -51,7 +50,7 @@ const ImageManager = ({ images, imageItems, onRemove, onReorder }) => {
       <div className="image-manager-grid">
         {itemsToRender.map((item, index) => (
           <div
-            key={item.id} // Use stable ID instead of index
+            key={item.id}
             className={`image-manager-item ${draggedIndex === index ? 'dragging' : ''}`}
             draggable
             onDragStart={(e) => handleDragStart(e, index)}
