@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from './config';
 import LikeButton from './LikeButton';
 import CommentSection from './CommentSection';
+import ImageCarousel from './ImageCarousel';
 
 function PostDetail({ user }) {
   const { slug } = useParams();
@@ -54,14 +55,18 @@ function PostDetail({ user }) {
 
   return (
     <div className="post-detail">
-      {post.img && (
-        <img 
-          src={`${API_BASE_URL}${post.img}`} 
-          alt={post.title} 
-          className="post-detail-image"
-          onError={(e) => {
-            e.target.style.display = 'none';
-          }}
+      {/* Display images using carousel */}
+      {(post.images && post.images.length > 0) ? (
+        <ImageCarousel 
+          images={post.images.map(img => `${API_BASE_URL}${img}`)} 
+          alt={post.title}
+          showThumbnails={true}
+        />
+      ) : post.img && (
+        <ImageCarousel 
+          images={[`${API_BASE_URL}${post.img}`]} 
+          alt={post.title}
+          showThumbnails={true}
         />
       )}
       <div className="post-detail-content">

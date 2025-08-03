@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from './config';
+import ImageCarousel from './ImageCarousel';
+import ImageManager from './ImageManager';
 
 function CreatePost({ user, onPostCreated }) {
   const navigate = useNavigate();
@@ -10,13 +12,14 @@ function CreatePost({ user, onPostCreated }) {
     title: '',
     body: '',
     img: '',
+    images: [],
     category: '',
     isPinned: false
   });
   
   const [categories, setCategories] = useState([]);
-  const [imageFile, setImageFile] = useState(null);
-  const [imagePreview, setImagePreview] = useState('');
+  const [imageItems, setImageItems] = useState([]); // Array of {id, file, preview}
+  const [reorderCounter, setReorderCounter] = useState(0); // Force re-render counter
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState({});
@@ -24,6 +27,18 @@ function CreatePost({ user, onPostCreated }) {
   useEffect(() => {
     fetchCategories();
   }, []);
+
+  // Cleanup effect for object URLs - only on component unmount
+  useEffect(() => {
+    return () => {
+      // Only revoke URLs when component unmounts
+      imageItems.forEach(item => {
+        if (item && item.preview) {
+          URL.revokeObjectURL(item.preview);
+        }
+      });
+    };
+  }, []); // Empty dependency array - only runs on mount/unmount
 
   const fetchCategories = async () => {
     try {
@@ -65,11 +80,18 @@ function CreatePost({ user, onPostCreated }) {
   };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreview(previewUrl);
+    const files = Array.from(e.target.files);
+    if (files.length > 0) {
+      // Create new image items with unique IDs
+      const newImageItems = files.map((file, index) => ({
+        id: Date.now() + index, // Unique ID for each image
+        file: file,
+        preview: URL.createObjectURL(file)
+      }));
+      
+      // Add new items to existing ones
+      const updatedItems = [...imageItems, ...newImageItems];
+      setImageItems(updatedItems);
       
       if (errors.image) {
         setErrors(prev => ({
@@ -78,26 +100,55 @@ function CreatePost({ user, onPostCreated }) {
         }));
       }
     }
+    
+    // Reset the input so the same file can be selected again if needed
+    e.target.value = '';
   };
 
-  const uploadImage = async () => {
-    if (!imageFile) return '';
+  const removeImage = (indexToRemove) => {
+    // Get the item to remove and revoke its object URL
+    const itemToRemove = imageItems[indexToRemove];
+    if (itemToRemove) {
+      URL.revokeObjectURL(itemToRemove.preview);
+    }
+    
+    // Remove the item at the specified index
+    const updatedItems = imageItems.filter((_, index) => index !== indexToRemove);
+    setImageItems(updatedItems);
+  };
+
+  const reorderImages = (dragIndex, hoverIndex) => {
+    const updatedItems = [...imageItems];
+    
+    // Move the dragged item to the new position
+    const draggedItem = updatedItems[dragIndex];
+    updatedItems.splice(dragIndex, 1);
+    updatedItems.splice(hoverIndex, 0, draggedItem);
+    
+    setImageItems(updatedItems);
+    setReorderCounter(prev => prev + 1); // Force carousel re-mount
+  };
+
+  const uploadImages = async () => {
+    if (!imageItems || imageItems.length === 0) return [];
     
     const formData = new FormData();
-    formData.append('image', imageFile);
+    imageItems.forEach(item => {
+      formData.append('images', item.file);
+    });
     
     try {
       setIsUploading(true);
       const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_BASE_URL}/api/posts/upload-image`, formData, {
+      const response = await axios.post(`${API_BASE_URL}/api/posts/upload-images`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`
         }
       });
-      return response.data.imageUrl;
+      return response.data.imageUrls;
     } catch (error) {
-      throw new Error('Failed to upload image');
+      throw new Error('Failed to upload images');
     } finally {
       setIsUploading(false);
     }
@@ -118,8 +169,8 @@ function CreatePost({ user, onPostCreated }) {
       newErrors.category = 'Category is required';
     }
     
-    if (!formData.isPinned && !imageFile) {
-      newErrors.image = 'Image is required';
+    if (!formData.isPinned && (!imageItems || imageItems.length === 0)) {
+      newErrors.image = 'At least one image is required';
     }
     
     return newErrors;
@@ -137,16 +188,17 @@ function CreatePost({ user, onPostCreated }) {
     try {
       setIsSubmitting(true);
       
-      let imageUrl = '';
-      if (imageFile) {
-        imageUrl = await uploadImage();
+      let imageUrls = [];
+      if (imageItems && imageItems.length > 0) {
+        imageUrls = await uploadImages();
       }
       
       const token = localStorage.getItem('token');
       const postData = {
         title: formData.title,
         body: formData.body,
-        img: imageUrl,
+        images: imageUrls,
+        img: imageUrls.length > 0 ? imageUrls[0] : '', // For backward compatibility
         category: formData.category,
         isPinned: formData.isPinned
       };
@@ -160,9 +212,8 @@ function CreatePost({ user, onPostCreated }) {
       
       toast.success('Post created successfully!');
       
-      setFormData({ title: '', body: '', img: '', category: '', isPinned: false });
-      setImageFile(null);
-      setImagePreview('');
+      setFormData({ title: '', body: '', img: '', images: [], category: '', isPinned: false });
+      setImageItems([]);
       
       if (onPostCreated) {
         onPostCreated(response.data);
@@ -236,22 +287,53 @@ function CreatePost({ user, onPostCreated }) {
 
         <div className="form-group">
           <label htmlFor="image">
-            Image {formData.isPinned ? '(Optional)' : '(Required)'}
+            Images {formData.isPinned ? '(Optional)' : '(Required)'}
           </label>
-          <input
-            type="file"
-            id="image"
-            name="image"
-            accept="image/*"
-            onChange={handleImageChange}
-            disabled={isSubmitting || isUploading}
-            className={errors.image ? 'error' : ''}
-            required={!formData.isPinned}
-          />
+          
+          <div className="add-image-section">
+            <input
+              type="file"
+              id="image"
+              name="image"
+              accept="image/*"
+              multiple
+              onChange={handleImageChange}
+              disabled={isSubmitting || isUploading}
+              className="add-image-input"
+              required={!formData.isPinned && imageItems.length === 0}
+            />
+            <button
+              type="button"
+              className="add-image-btn"
+              onClick={() => document.getElementById('image').click()}
+              disabled={isSubmitting || isUploading}
+              title="Click to select one or more images"
+            >
+            {imageItems.length === 0 ? 'Add Images' : 'Add More Images'}
+            </button>
+          </div>
+          
           {errors.image && <span className="error-message">{errors.image}</span>}
-          {imagePreview && (
-            <div className="image-preview">
-              <img src={imagePreview} alt="Preview" />
+          
+          {/* Image Manager for selected images */}
+          {imageItems.length > 0 && (
+            <ImageManager
+              images={imageItems.map(item => item.preview)}
+              imageItems={imageItems}
+              onRemove={removeImage}
+              onReorder={reorderImages}
+            />
+          )}
+          
+          {/* Carousel Preview */}
+          {imageItems.length > 0 && (
+            <div className="image-preview-section">
+              <h4>Preview:</h4>
+              <ImageCarousel 
+                key={`carousel-reorder-${reorderCounter}-${imageItems.length}`} 
+                images={imageItems.map(item => item.preview)} 
+                alt="Image preview" 
+              />
             </div>
           )}
         </div>
@@ -295,7 +377,7 @@ function CreatePost({ user, onPostCreated }) {
           className="btn btn-primary" 
           disabled={isSubmitting || isUploading}
         >
-          {isSubmitting ? 'Creating Post...' : isUploading ? 'Uploading Image...' : 'Create Post'}
+          {isSubmitting ? 'Creating Post...' : isUploading ? 'Uploading Images...' : 'Create Post'}
         </button>
       </form>
     </div>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from './config';
+import ImageCarousel from './ImageCarousel';
 
 function PopularPosts({ user }) {
   const [popularPosts, setPopularPosts] = useState([]);
@@ -83,7 +84,23 @@ function PopularPosts({ user }) {
               </div>
               
               <Link to={`/post/${post.slug || post._id}`} className="popular-post-content">
-                {post.img && (
+                {/* Show first image as preview, with indicator if multiple images */}
+                {(post.images && post.images.length > 0) ? (
+                  <div className="popular-post-image">
+                    <img 
+                      src={`${API_BASE_URL}${post.images[0]}`} 
+                      alt={post.title}
+                      onError={(e) => {
+                        e.target.style.display = 'none';
+                      }}
+                    />
+                    {post.images.length > 1 && (
+                      <div className="multiple-images-indicator">
+                        +{post.images.length - 1}
+                      </div>
+                    )}
+                  </div>
+                ) : post.img && (
                   <div className="popular-post-image">
                     <img 
                       src={`${API_BASE_URL}${post.img}`} 

@@ -1244,57 +1244,27 @@ body {
 }
 
 .popular-posts-section .popular-post-stats {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  flex-wrap: wrap;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  flex-wrap: nowrap !important;
+  justify-content: flex-start !important;
 }
 
-.stat-item {
-  display: flex;
-  align-items: center;
-  gap: 0.2rem;
-  padding: 0.2rem 0.4rem;
-  background: rgba(0, 123, 255, 0.08);
-  border-radius: 10px;
-  transition: all 0.2s ease;
-  font-size: 0.65rem;
+.popular-posts-section .popular-post-stats > * {
+  flex: 0 0 auto !important;
+  display: inline-flex !important;
 }
 
-.stat-item.likes {
-  background: rgba(239, 68, 68, 0.1);
-  color: #dc2626;
+.popular-posts-section .popular-post-stats .like-button-container {
+  display: inline-flex !important;
+  margin: 0 !important;
 }
 
-.stat-item.comments {
-  background: rgba(59, 130, 246, 0.1);
-  color: #2563eb;
-}
-
-.stat-item:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.stat-icon {
-  width: 10px;
-  height: 10px;
-  flex-shrink: 0;
-}
-
-.stat-count {
-  font-size: 0.65rem;
-  font-weight: 600;
-  line-height: 1;
-}
-
-.likes-count,
-.comments-count {
-  font-size: 0.75rem;
-  color: #6c757d;
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.popular-posts-section .popular-post-stats .comment-link {
+  display: inline-flex !important;
+  margin: 0 !important;
 }
 
 .popular-posts-section .popular-post-date {
@@ -1879,6 +1849,18 @@ body {
   font-size: 0.9rem;
   color: #666;
   text-align: center;
+}
+
+/* Simple inline container for stats buttons */
+.stats-inline-container {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 1rem !important;
+  flex-wrap: nowrap !important;
+}
+
+.stats-inline-container > * {
+  display: inline-flex !important;
 }
 
 /* Mobile pagination styles */

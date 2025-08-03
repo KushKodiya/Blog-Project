@@ -171,14 +171,21 @@ function UserPosts({ user }) {
                 </div>
 
                 <div className="post-stats">
-                  <LikeButton 
-                    postId={post._id}
-                    initialLikesCount={post.likesCount}
-                    initialIsLiked={post.isLiked}
-                    user={user}
-                  />
-                  <div className="comment-count">
-                    💬 {post.commentsCount || 0} {(post.commentsCount || 0) === 1 ? 'comment' : 'comments'}
+                  <div className="stats-inline-container">
+                    <LikeButton 
+                      postId={post._id}
+                      initialLikesCount={post.likesCount}
+                      initialIsLiked={post.isLiked}
+                      user={user}
+                    />
+                    <Link to={`/post/${post.slug || post._id}`} className="comment-link">
+                      <div className="comment-count modern-stat-item comments">
+                        <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
+                        </svg>
+                        <span className="stat-count">{post.commentsCount || 0}</span>
+                      </div>
+                    </Link>
                   </div>
                 </div>
 

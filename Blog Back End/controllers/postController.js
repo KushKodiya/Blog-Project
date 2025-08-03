@@ -19,9 +19,25 @@ const uploadImage = (req, res) => {
     }
 };
 
+const uploadMultipleImages = (req, res) => {
+    try {
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ error: 'No image files provided' });
+        }
+        
+        const imageUrls = req.files.map(file => `/uploads/${file.filename}`);
+        res.json({ 
+            message: 'Images uploaded successfully',
+            imageUrls: imageUrls 
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 const createPost = async (req, res) => {
     try {
-        const { title, body, img, category, isPinned } = req.body;
+        const { title, body, img, images, category, isPinned } = req.body;
         
         if (!title || !title.trim()) {
             return res.status(400).json({ error: 'Title is required' });
@@ -34,8 +50,10 @@ const createPost = async (req, res) => {
         const canPin = req.user.role === 'admin' || req.user.role === 'Admin';
         const finalIsPinned = canPin ? isPinned : false;
         
-        if (!finalIsPinned && (!img || !img.trim())) {
-            return res.status(400).json({ error: 'Image is required' });
+        // Check if at least one image is provided (either single or multiple)
+        const hasImages = (img && img.trim()) || (images && images.length > 0);
+        if (!finalIsPinned && !hasImages) {
+            return res.status(400).json({ error: 'At least one image is required' });
         }
         
         let finalCategory = category;
@@ -55,13 +73,25 @@ const createPost = async (req, res) => {
             return res.status(400).json({ error: 'Category is required' });
         }
         
-        const newPost = new Post({
+        const postData = {
             title,
             body,
             user: req.user._id,
             category: finalCategory,
             isPinned: finalIsPinned
-        });
+        };
+        
+        // Add images based on what was provided
+        if (images && images.length > 0) {
+            postData.images = images;
+            // If multiple images are provided, use the first one as the main image for backward compatibility
+            postData.img = images[0];
+        } else if (img && img.trim()) {
+            postData.img = img;
+            postData.images = [img];
+        }
+        
+        const newPost = new Post(postData);
         
         const savedPost = await newPost.save();
         await savedPost.populate([
@@ -394,6 +424,7 @@ const getPopularPosts = async (req, res) => {
 
 module.exports = {
     uploadImage,
+    uploadMultipleImages,
     createPost,
     getAllPosts,
     getUserPosts,

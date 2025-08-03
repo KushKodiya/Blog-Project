@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE_URL } from './config';
 import LikeButton from './LikeButton';
+import ImageCarousel from './ImageCarousel';
 
 function MainContent({ user, selectedCategory, searchTerm }) {
   const [posts, setPosts] = useState([]);
@@ -120,6 +121,26 @@ function MainContent({ user, selectedCategory, searchTerm }) {
                     Pinned
                   </div>
                 )}
+                
+                {/* Image Carousel for posts with images - outside Link to prevent navigation conflicts */}
+                {(post.images && post.images.length > 0) ? (
+                  <div className="post-image-container">
+                    <ImageCarousel 
+                      images={post.images.map(img => `${API_BASE_URL}${img}`)} 
+                      alt={post.title}
+                      showThumbnails={false}
+                    />
+                  </div>
+                ) : post.img && (
+                  <div className="post-image-container">
+                    <ImageCarousel 
+                      images={[`${API_BASE_URL}${post.img}`]} 
+                      alt={post.title}
+                      showThumbnails={false}
+                    />
+                  </div>
+                )}
+                
                 <Link to={`/post/${post.slug || post._id}`} className="post-card-link">
                   <div className="post-header">
                     <h2>{post.title}</h2>
@@ -131,18 +152,6 @@ function MainContent({ user, selectedCategory, searchTerm }) {
                       )}
                     </div>
                   </div>
-                  
-                  {post.img && (
-                    <div className="post-image">
-                      <img 
-                        src={`${API_BASE_URL}${post.img}`} 
-                        alt={post.title}
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </div>
-                  )}
                   
                   <div className="post-body">
                     <p>{post.body.length > 200 ? post.body.substring(0, 200) + '...' : post.body}</p>
