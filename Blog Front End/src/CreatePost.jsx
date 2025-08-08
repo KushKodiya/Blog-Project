@@ -202,13 +202,14 @@ function CreatePost({ user, onPostCreated }) {
         }
       });
       
-      toast.success('Post created successfully!');
+      // Show the message from the backend (different for admin vs regular user)
+      toast.success(response.data.message || 'Post created successfully!');
       
       setFormData({ title: '', body: '', img: '', images: [], category: '', isPinned: false });
       setImageItems([]);
       
       if (onPostCreated) {
-        onPostCreated(response.data);
+        onPostCreated(response.data.post || response.data);
       }
       
       navigate('/');

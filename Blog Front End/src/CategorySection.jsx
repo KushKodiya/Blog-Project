@@ -28,14 +28,16 @@ function CategorySection({ selectedCategory, onCategoryChange, showCategories, o
         </svg>
       </div>
       <div className={`section-content ${showCategories ? 'expanded' : 'collapsed'}`}>
-        <div className="category-search">
-          <input
-            type="text"
-            placeholder="Search categories..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="search-input"
-          />
+        <div className="search-categories-container">
+          <div className="category-search">
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+          </div>
         </div>
         <div className="category-list">
           <button

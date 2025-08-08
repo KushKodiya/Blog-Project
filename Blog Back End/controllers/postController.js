@@ -48,6 +48,7 @@ const createPost = async (req, res) => {
         }
         
         const canPin = req.user.role === 'admin' || req.user.role === 'Admin';
+        const isAdmin = req.user.role === 'admin' || req.user.role === 'Admin';
         const finalIsPinned = canPin ? isPinned : false;
         
         // Check if at least one image is provided (either single or multiple)
@@ -78,7 +79,8 @@ const createPost = async (req, res) => {
             body,
             user: req.user._id,
             category: finalCategory,
-            isPinned: finalIsPinned
+            isPinned: finalIsPinned,
+            isActive: isAdmin // Admin posts are active by default, user posts need approval
         };
         
         // Add images based on what was provided
@@ -99,7 +101,14 @@ const createPost = async (req, res) => {
             { path: 'category', select: 'title isActive' }
         ]);
         
-        res.status(201).json(savedPost);
+        const responseData = {
+            post: savedPost,
+            message: isAdmin 
+                ? 'Post created and published successfully!' 
+                : 'Post created successfully! It will be visible after admin approval.'
+        };
+        
+        res.status(201).json(responseData);
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -109,7 +118,7 @@ const getAllPosts = async (req, res) => {
     try {
         const { category, page = 1, limit = 5 } = req.query;
         const userId = req.user ? req.user._id : null;
-        let filter = {};
+        let filter = { isActive: true }; // Only show active posts to regular users
         
         if (category) {
             filter.category = category;
@@ -169,10 +178,22 @@ const getAllPosts = async (req, res) => {
 const getUserPosts = async (req, res) => {
     try {
         const userId = req.user._id;
-        const posts = await Post.find({ user: userId })
+        const { page = 1, limit = 6 } = req.query;
+        
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+        const skipNumber = (pageNumber - 1) * limitNumber;
+        
+        const filter = { user: userId };
+        const totalPosts = await Post.countDocuments(filter);
+        const totalPages = Math.ceil(totalPosts / limitNumber);
+        
+        const posts = await Post.find(filter)
             .populate('user', 'firstName lastName email')
             .populate('category', 'title isActive')
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .skip(skipNumber)
+            .limit(limitNumber);
         
         const postsWithLikes = await Promise.all(posts.map(async (post) => {
             const postObj = post.toObject();
@@ -191,7 +212,17 @@ const getUserPosts = async (req, res) => {
             return postObj;
         }));
         
-        res.json(postsWithLikes);
+        res.json({
+            posts: postsWithLikes,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: totalPages,
+                totalPosts: totalPosts,
+                hasNextPage: pageNumber < totalPages,
+                hasPrevPage: pageNumber > 1,
+                limit: limitNumber
+            }
+        });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
@@ -422,6 +453,183 @@ const getPopularPosts = async (req, res) => {
     }
 };
 
+const getAllPostsAdmin = async (req, res) => {
+    try {
+        const { page = 1, limit = 10, status = 'all' } = req.query;
+        const userId = req.user ? req.user._id : null;
+        let filter = {};
+        
+        // Filter by status if specified
+        if (status === 'active') {
+            filter.isActive = true;
+        } else if (status === 'inactive') {
+            filter.isActive = false;
+        }
+        
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+        const skipNumber = (pageNumber - 1) * limitNumber;
+        
+        const totalPosts = await Post.countDocuments(filter);
+        const totalPages = Math.ceil(totalPosts / limitNumber);
+        
+        const posts = await Post.find(filter)
+            .populate('user', 'firstName lastName email')
+            .populate('category', 'title isActive')
+            .sort({ isPinned: -1, createdAt: -1 })
+            .skip(skipNumber)
+            .limit(limitNumber);
+        
+        const postsWithLikes = await Promise.all(posts.map(async (post) => {
+            const postObj = post.toObject();
+            if (postObj.category && !postObj.category.isActive) {
+                postObj.category = null;
+            }
+            
+            const likesCount = await Like.countDocuments({ post: post._id });
+            const commentsCount = await Comment.countDocuments({ post: post._id });
+            postObj.likesCount = likesCount;
+            postObj.commentsCount = commentsCount;
+            
+            if (userId) {
+                const userLike = await Like.findOne({ user: userId, post: post._id });
+                postObj.isLiked = !!userLike;
+            } else {
+                postObj.isLiked = false;
+            }
+            
+            return postObj;
+        }));
+        
+        res.json({
+            posts: postsWithLikes,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: totalPages,
+                totalPosts: totalPosts,
+                hasNextPage: pageNumber < totalPages,
+                hasPrevPage: pageNumber > 1,
+                limit: limitNumber
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const togglePostStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const post = await Post.findById(id);
+        
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        
+        post.isActive = !post.isActive;
+        await post.save();
+        
+        await post.populate([
+            { path: 'user', select: 'firstName lastName email' },
+            { path: 'category', select: 'title isActive' }
+        ]);
+        
+        res.json({
+            message: `Post ${post.isActive ? 'activated' : 'deactivated'} successfully`,
+            post: post
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const getPendingPosts = async (req, res) => {
+    try {
+        const { page = 1, limit = 6 } = req.query;
+        const userId = req.user ? req.user._id : null;
+        let filter = { isActive: false }; // Only show inactive posts needing approval
+        
+        const pageNumber = parseInt(page);
+        const limitNumber = parseInt(limit);
+        const skipNumber = (pageNumber - 1) * limitNumber;
+        
+        const totalPosts = await Post.countDocuments(filter);
+        const totalPages = Math.ceil(totalPosts / limitNumber);
+        
+        const posts = await Post.find(filter)
+            .populate('user', 'firstName lastName email')
+            .populate('category', 'title isActive')
+            .sort({ createdAt: -1 }) // Show newest first
+            .skip(skipNumber)
+            .limit(limitNumber);
+        
+        const postsWithLikes = await Promise.all(posts.map(async (post) => {
+            const postObj = post.toObject();
+            if (postObj.category && !postObj.category.isActive) {
+                postObj.category = null;
+            }
+            
+            const likesCount = await Like.countDocuments({ post: post._id });
+            const commentsCount = await Comment.countDocuments({ post: post._id });
+            postObj.likesCount = likesCount;
+            postObj.commentsCount = commentsCount;
+            
+            if (userId) {
+                const userLike = await Like.findOne({ user: userId, post: post._id });
+                postObj.isLiked = !!userLike;
+            } else {
+                postObj.isLiked = false;
+            }
+            
+            return postObj;
+        }));
+        
+        res.json({
+            posts: postsWithLikes,
+            pagination: {
+                currentPage: pageNumber,
+                totalPages: totalPages,
+                totalPosts: totalPosts,
+                hasNextPage: pageNumber < totalPages,
+                hasPrevPage: pageNumber > 1,
+                limit: limitNumber
+            }
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
+const approvePost = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const post = await Post.findById(id);
+        
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        
+        if (post.isActive) {
+            return res.status(400).json({ error: 'Post is already approved' });
+        }
+        
+        post.isActive = true;
+        await post.save();
+        
+        await post.populate([
+            { path: 'user', select: 'firstName lastName email' },
+            { path: 'category', select: 'title isActive' }
+        ]);
+        
+        res.json({
+            message: 'Post approved successfully',
+            post: post
+        });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+};
+
 module.exports = {
     uploadImage,
     uploadMultipleImages,
@@ -432,5 +640,9 @@ module.exports = {
     getPostBySlug,
     updatePost,
     deletePost,
-    getPopularPosts
+    getPopularPosts,
+    getAllPostsAdmin,
+    togglePostStatus,
+    getPendingPosts,
+    approvePost
 };

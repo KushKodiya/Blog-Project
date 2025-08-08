@@ -21,6 +21,10 @@ function Home({ user }) {
     setShowPopularPosts(!showPopularPosts);
   };
 
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
+
   return (
     <div className="home-layout">
       <div className="sidebar">
@@ -48,6 +52,7 @@ function Home({ user }) {
         user={user}
         selectedCategory={selectedCategory}
         searchTerm={searchTerm}
+        onSearchChange={handleSearchChange}
       />
 
       <div className="sidebar right-sidebar">

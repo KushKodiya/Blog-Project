@@ -9,23 +9,75 @@ function UserPosts({ user }) {
   const [posts, setPosts] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalPosts: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    limit: 6
+  });
+  const [currentPage, setCurrentPage] = useState(1);
+  
+  const isAdmin = React.useMemo(() => {
+    if (!user) return false;
+    const role = user.role?.toLowerCase();
+    return role === 'admin';
+  }, [user]);
 
   useEffect(() => {
-    fetchUserPosts();
-  }, []);
+    if (user) {
+      if (isAdmin) {
+        fetchAllPosts();
+      } else {
+        fetchUserPosts();
+      }
+    }
+  }, [user, isAdmin, currentPage]);
 
   const fetchUserPosts = async () => {
     try {
       setIsLoading(true);
+      setError(null);
       const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_BASE_URL}/api/posts/user/my-posts`, {
-        headers: {
-          Authorization: `Bearer ${token}`
+      const response = await axios.get(
+        `${API_BASE_URL}/api/posts/user/my-posts?page=${currentPage}&limit=6`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
         }
-      });
-      setPosts(response.data);
+      );
+      setPosts(response.data.posts || []);
+      setPagination(response.data.pagination || {});
     } catch (error) {
+      console.error('Error fetching user posts:', error);
       setError('Failed to load your posts');
+      setPosts([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const fetchAllPosts = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const token = localStorage.getItem('token');
+      const response = await axios.get(
+        `${API_BASE_URL}/api/posts/admin/all?page=${currentPage}&limit=6`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      );
+      setPosts(response.data.posts || []);
+      setPagination(response.data.pagination || {});
+    } catch (error) {
+      console.error('Error fetching admin posts:', error);
+      setError('Failed to load posts');
+      setPosts([]);
     } finally {
       setIsLoading(false);
     }
@@ -102,23 +154,98 @@ function UserPosts({ user }) {
         }
       });
       
-      setPosts(posts.filter(post => post._id !== postId));
       toast.success('Post deleted successfully!');
+      
+      // Refresh the posts list
+      if (isAdmin) {
+        fetchAllPosts();
+      } else {
+        setPosts(posts.filter(post => post._id !== postId));
+      }
     } catch (error) {
       toast.error('Failed to delete post. Please try again.');
     }
   };
 
+  const handleTogglePostStatus = async (postId, currentStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      await axios.patch(`${API_BASE_URL}/api/posts/${postId}/toggle-status`, {}, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      const newStatus = currentStatus ? 'deactivated' : 'activated';
+      toast.success(`Post ${newStatus} successfully`);
+      
+      // Refresh the posts list
+      if (isAdmin) {
+        fetchAllPosts();
+      }
+    } catch (error) {
+      console.error('Error toggling post status:', error);
+      toast.error(error.response?.data?.error || 'Failed to update post status');
+    }
+  };
+
+  const handlePageChange = (newPage) => {
+    setCurrentPage(newPage);
+  };
+
+  const renderPagination = () => {
+    if (pagination.totalPages <= 1) return null;
+
+    const pages = [];
+    for (let i = 1; i <= pagination.totalPages; i++) {
+      pages.push(
+        <button
+          key={i}
+          onClick={() => handlePageChange(i)}
+          className={`page-number ${i === pagination.currentPage ? 'active' : ''}`}
+        >
+          {i}
+        </button>
+      );
+    }
+
+    return (
+      <div className="pagination">
+        <div className="pagination-info">
+          <div className="page-numbers">
+            <button
+              onClick={() => handlePageChange(pagination.currentPage - 1)}
+              disabled={!pagination.hasPrevPage}
+              className="page-number"
+            >
+              Previous
+            </button>
+            {pages}
+            <button
+              onClick={() => handlePageChange(pagination.currentPage + 1)}
+              disabled={!pagination.hasNextPage}
+              className="page-number"
+            >
+              Next
+            </button>
+          </div>
+          <div className="page-info">
+            Page {pagination.currentPage} of {pagination.totalPages} 
+            ({pagination.totalPosts} total posts)
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   if (!user) {
     return (
       <div className="user-posts-container">
-        <p>Please log in to view your posts.</p>
+        <div className="loading">Loading...</div>
       </div>
     );
   }
 
   if (isLoading) {
-    return <div className="loading">Loading your posts...</div>;
+    return <div className="loading">{isAdmin ? 'Loading all posts...' : 'Loading your posts...'}</div>;
   }
 
   if (error) {
@@ -128,14 +255,21 @@ function UserPosts({ user }) {
   return (
     <div className="user-posts-container">
       <div className="user-posts-header">
-        <h1>Your Posts</h1>
-        <p>You have {posts.length} post{posts.length !== 1 ? 's' : ''}</p>
+        <h1>{isAdmin ? 'All Posts' : 'Your Posts'}</h1>
+        <p>
+          {pagination.totalPosts > 0 
+            ? `Showing ${posts.length} of ${pagination.totalPosts} post${pagination.totalPosts !== 1 ? 's' : ''}` 
+            : 'No posts found'
+          }
+        </p>
       </div>
 
       {posts.length === 0 ? (
         <div className="no-posts">
-          <p>You haven't created any posts yet.</p>
-          <Link to="/create-post" className="btn btn-primary">Create Your First Post</Link>
+          <p>{isAdmin ? 'No posts found.' : 'You haven\'t created any posts yet.'}</p>
+          {!isAdmin && (
+            <Link to="/create-post" className="btn btn-primary">Create Your First Post</Link>
+          )}
         </div>
       ) : (
         <div className="posts-grid">
@@ -150,6 +284,18 @@ function UserPosts({ user }) {
                     <span>{formatDate(post.createdAt)}</span>
                     {post.category && (
                       <span className="post-category">{post.category.title}</span>
+                    )}
+                    {isAdmin && (
+                      <>
+                        <span className={`post-status ${post.isActive ? 'active' : 'inactive'}`}>
+                          {post.isActive ? 'Active' : 'Inactive'}
+                        </span>
+                        {post.user && (
+                          <span className="post-author">
+                            by {post.user.firstName} {post.user.lastName}
+                          </span>
+                        )}
+                      </>
                     )}
                   </div>
                 </div>
@@ -197,12 +343,22 @@ function UserPosts({ user }) {
                   >
                     Delete
                   </button>
+                  {isAdmin && (
+                    <button 
+                      onClick={() => handleTogglePostStatus(post._id, post.isActive)}
+                      className={`btn ${post.isActive ? 'btn-warning' : 'btn-success'}`}
+                    >
+                      {post.isActive ? 'Deactivate' : 'Activate'}
+                    </button>
+                  )}
                 </div>
               </div>
             </div>
           ))}
         </div>
       )}
+
+      {renderPagination()}
     </div>
   );
 }

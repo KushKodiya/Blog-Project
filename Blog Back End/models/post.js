@@ -46,6 +46,10 @@ const postSchema = new mongoose.Schema({
     isPinned: {
         type: Boolean,
         default: false,
+    },
+    isActive: {
+        type: Boolean,
+        default: false,
     }
 }, {
     timestamps: true,

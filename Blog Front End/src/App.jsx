@@ -63,7 +63,9 @@ function App() {
               {user ? (
                 <>
                   <Link to="/create-post">Create Post</Link>
-                  <Link to="/your-posts">Your Posts</Link>
+                  <Link to="/your-posts">
+                    {(user.role?.toLowerCase() === 'admin') ? 'All Posts' : 'Your Posts'}
+                  </Link>
                   {(user.role === 'admin' || user.role === 'Admin') && (
                     <>
                       <Link to="/manage-categories">Manage Categories</Link>
