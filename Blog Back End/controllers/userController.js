@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
 const { JWT_SECRET } = require('../middleware/auth');
+const { sendRegistrationEmail } = require('../services/emailService');
 
 const registerUser = async (req, res) => {
     try {
@@ -25,6 +26,14 @@ const registerUser = async (req, res) => {
         });
 
         const savedUser = await newUser.save();
+
+        // Send registration email
+        try {
+            await sendRegistrationEmail(savedUser.email, savedUser.firstName);
+        } catch (emailError) {
+            console.error('Failed to send registration email:', emailError);
+            // Don't fail the registration if email fails
+        }
 
         const token = jwt.sign({ userId: savedUser._id }, JWT_SECRET, { expiresIn: '7d' });
 

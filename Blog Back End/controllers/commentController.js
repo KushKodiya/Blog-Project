@@ -1,12 +1,13 @@
 const Comment = require('../models/comment');
 const Post = require('../models/post');
+const { sendNewCommentEmail } = require('../services/emailService');
 
 const createComment = async (req, res) => {
     try {
         const { content, postId, parentCommentId } = req.body;
         const userId = req.user._id;
 
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate('user', 'firstName lastName email');
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
@@ -30,6 +31,22 @@ const createComment = async (req, res) => {
 
         await comment.save();
         await comment.populate('user', 'firstName lastName email');
+
+        // Send email notification to post author (if not commenting on their own post)
+        if (post.user._id.toString() !== userId.toString()) {
+            try {
+                await sendNewCommentEmail(
+                    post.user.email,
+                    post.user.firstName,
+                    comment.user.firstName,
+                    post.title,
+                    content
+                );
+            } catch (emailError) {
+                console.error('Failed to send comment notification email:', emailError);
+                // Don't fail the comment creation if email fails
+            }
+        }
 
         const commentObj = comment.toObject();
         commentObj.isLiked = false;
