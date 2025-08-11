@@ -38,7 +38,7 @@ const emailTemplates = {
         subject: 'Your Post Has Been Approved!',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #28a745;">Post Approved! 🎉</h2>
+                <h2 style="color: #28a745;">Post Approved!</h2>
                 <p>Dear ${userName},</p>
                 <p>Great news! Your blog post has been approved and is now live on our platform.</p>
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">
@@ -57,7 +57,7 @@ const emailTemplates = {
         subject: 'New Comment on Your Post',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h2 style="color: #007bff;">New Comment on Your Post! 💬</h2>
+                <h2 style="color: #007bff;">New Comment on Your Post!</h2>
                 <p>Dear ${postAuthorName},</p>
                 <p>Someone has commented on your blog post!</p>
                 <div style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin: 20px 0;">

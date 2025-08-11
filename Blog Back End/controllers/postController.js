@@ -527,6 +527,7 @@ const togglePostStatus = async (req, res) => {
             return res.status(404).json({ error: 'Post not found' });
         }
         
+        const wasInactive = !post.isActive; // Check if post was inactive before toggle
         post.isActive = !post.isActive;
         await post.save();
         
@@ -534,6 +535,20 @@ const togglePostStatus = async (req, res) => {
             { path: 'user', select: 'firstName lastName email' },
             { path: 'category', select: 'title isActive' }
         ]);
+        
+        // Send approval email if post was just activated (approved)
+        if (wasInactive && post.isActive) {
+            try {
+                await sendPostApprovedEmail(
+                    post.user.email,
+                    post.user.firstName,
+                    post.title
+                );
+            } catch (emailError) {
+                console.error('Failed to send post approval email:', emailError);
+                // Don't fail the activation if email fails
+            }
+        }
         
         res.json({
             message: `Post ${post.isActive ? 'activated' : 'deactivated'} successfully`,
@@ -623,26 +638,16 @@ const approvePost = async (req, res) => {
         ]);
 
         // Send approval email to the post author
-        console.log('=== POST APPROVAL EMAIL DEBUG ===');
-        console.log('Post author email:', post.user.email);
-        console.log('Post author name:', post.user.firstName);
-        console.log('Post title:', post.title);
-        console.log('EMAIL_USER from env:', process.env.EMAIL_USER);
-        console.log('EMAIL_PASS configured:', !!process.env.EMAIL_PASS);
-        
         try {
-            console.log('Attempting to send approval email...');
-            const emailResult = await sendPostApprovedEmail(
+            await sendPostApprovedEmail(
                 post.user.email,
                 post.user.firstName,
                 post.title
             );
-            console.log('Email send result:', emailResult);
         } catch (emailError) {
             console.error('Failed to send post approval email:', emailError);
             // Don't fail the approval if email fails
         }
-        console.log('=== END DEBUG ===');
         
         res.json({
             message: 'Post approved successfully',
