@@ -6,6 +6,7 @@ import Home from './Home';
 import Login from './Login';
 import Signup from './Signup';
 import CreatePost from './CreatePost';
+import EditPost from './EditPost';
 import PostDetail from './PostDetail';
 import ManageCategories from './ManageCategories';
 import UserPosts from './UserPosts';
@@ -117,6 +118,12 @@ function App() {
                 path="/create-post" 
                 element={
                   user ? <CreatePost user={user} /> : <Navigate to="/login" />
+                } 
+              />
+              <Route 
+                path="/edit-post/:id" 
+                element={
+                  user ? <EditPost user={user} /> : <Navigate to="/login" />
                 } 
               />
               <Route 

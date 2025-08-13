@@ -32,7 +32,6 @@ const createComment = async (req, res) => {
         await comment.save();
         await comment.populate('user', 'firstName lastName email');
 
-        // Send email notification to post author (if not commenting on their own post)
         if (post.user._id.toString() !== userId.toString()) {
             try {
                 await sendNewCommentEmail(
@@ -44,7 +43,6 @@ const createComment = async (req, res) => {
                 );
             } catch (emailError) {
                 console.error('Failed to send comment notification email:', emailError);
-                // Don't fail the comment creation if email fails
             }
         }
 

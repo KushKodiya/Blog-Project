@@ -22,7 +22,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
   const [searchCurrentPage, setSearchCurrentPage] = useState(1);
   const postsPerPage = 5;
 
-  // Text highlighting function
   const highlightText = (text, searchTerm) => {
     if (!searchTerm.trim() || !text) return text;
     
@@ -41,14 +40,13 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
   }, [selectedCategory, currentPage]);
 
   useEffect(() => {
-    // Debounce search to avoid too many API calls
     const timeoutId = setTimeout(() => {
       if (searchTerm.trim()) {
         fetchAllPosts();
       } else {
         setAllPosts([]);
       }
-    }, 300); // 300ms delay
+    }, 300);
 
     return () => clearTimeout(timeoutId);
   }, [searchTerm, selectedCategory]);
@@ -60,7 +58,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
   }, [selectedCategory]);
 
   useEffect(() => {
-    // Reset search pagination when search term changes
     setSearchCurrentPage(1);
   }, [searchTerm]);
 
@@ -97,8 +94,7 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
-      // Fetch all posts (no pagination limit) for search
-      let url = `${API_BASE_URL}/api/posts?limit=10000`; // Very large limit to get all posts
+      let url = `${API_BASE_URL}/api/posts?limit=10000`; 
       if (selectedCategory) {
         url += `&category=${selectedCategory}`;
       }
@@ -108,7 +104,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
     } catch (error) {
       console.error('Search fetch error:', error);
       setError('Failed to load posts for search');
-      // Fallback: use current posts for search if all posts fetch fails
       setAllPosts(posts);
     } finally {
       setIsSearching(false);
@@ -141,7 +136,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
     }) : 
     posts;
 
-  // Calculate pagination for search results
   const totalSearchPages = Math.ceil(filteredPosts.length / postsPerPage);
   const startIndex = (searchCurrentPage - 1) * postsPerPage;
   const endIndex = startIndex + postsPerPage;
@@ -151,7 +145,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
 
   const handlePageChange = (newPage) => {
     if (searchTerm.trim()) {
-      // Handle search pagination
       if (newPage >= 1 && newPage <= totalSearchPages) {
         setSearchCurrentPage(newPage);
         setTimeout(() => {
@@ -159,7 +152,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
         }, 100);
       }
     } else {
-      // Handle normal pagination
       if (newPage >= 1 && newPage <= pagination.totalPages) {
         setCurrentPage(newPage);
         setTimeout(() => {
@@ -178,7 +170,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
 
     const buttons = [];
     
-    // Previous button
     if (currentPageNum > 1) {
       buttons.push(
         <button 
@@ -191,7 +182,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
       );
     }
 
-    // Page numbers
     const startPage = Math.max(1, currentPageNum - 2);
     const endPage = Math.min(totalPages, currentPageNum + 2);
 
@@ -229,7 +219,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
       );
     }
 
-    // Next button
     if (currentPageNum < totalPages) {
       buttons.push(
         <button 

@@ -26,7 +26,7 @@ router.get('/popular', optionalAuth, getPopularPosts);
 router.get('/slug/:slug', optionalAuth, getPostBySlug);
 router.get('/:id', optionalAuth, getPostById);        
 
-// Admin routes
+
 router.get('/admin/all', auth, requireAdmin, getAllPostsAdmin);
 router.get('/admin/pending', auth, requireAdmin, getPendingPosts);
 router.patch('/:id/toggle-status', auth, requireAdmin, togglePostStatus);

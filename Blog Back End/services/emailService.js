@@ -11,7 +11,6 @@ const createTransporter = () => {
     });
 };
 
-// Email templates
 const emailTemplates = {
     registration: (userName) => ({
         subject: 'Welcome to the Blog Platform!',
@@ -76,7 +75,7 @@ const emailTemplates = {
     })
 };
 
-// Send email function
+
 const sendEmail = async (to, template) => {
     try {
         const transporter = createTransporter();
@@ -97,7 +96,7 @@ const sendEmail = async (to, template) => {
     }
 };
 
-// Specific email sending functions
+
 const sendRegistrationEmail = async (userEmail, userName) => {
     const template = emailTemplates.registration(userName);
     return await sendEmail(userEmail, template);

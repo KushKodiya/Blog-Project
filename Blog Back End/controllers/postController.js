@@ -52,7 +52,7 @@ const createPost = async (req, res) => {
         const isAdmin = req.user.role === 'admin' || req.user.role === 'Admin';
         const finalIsPinned = canPin ? isPinned : false;
         
-        // Check if at least one image is provided (either single or multiple)
+        
         const hasImages = (img && img.trim()) || (images && images.length > 0);
         if (!finalIsPinned && !hasImages) {
             return res.status(400).json({ error: 'At least one image is required' });
@@ -81,13 +81,11 @@ const createPost = async (req, res) => {
             user: req.user._id,
             category: finalCategory,
             isPinned: finalIsPinned,
-            isActive: isAdmin // Admin posts are active by default, user posts need approval
+            isActive: isAdmin 
         };
         
-        // Add images based on what was provided
         if (images && images.length > 0) {
             postData.images = images;
-            // If multiple images are provided, use the first one as the main image for backward compatibility
             postData.img = images[0];
         } else if (img && img.trim()) {
             postData.img = img;
@@ -119,7 +117,7 @@ const getAllPosts = async (req, res) => {
     try {
         const { category, page = 1, limit = 5 } = req.query;
         const userId = req.user ? req.user._id : null;
-        let filter = { isActive: true }; // Only show active posts to regular users
+        let filter = { isActive: true };
         
         if (category) {
             filter.category = category;
@@ -297,31 +295,64 @@ const getPostBySlug = async (req, res) => {
 
 const updatePost = async (req, res) => {
     try {
-        const { title, body, img } = req.body;
+        const { title, body, img, category, images, isPinned } = req.body;
         const post = await Post.findById(req.params.id);
         
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
         
-        if (post.user.toString() !== req.user._id.toString()) {
+    
+        const isOwner = post.user.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
+        
+        if (!isOwner && !isAdmin) {
             return res.status(403).json({ error: 'Not authorized to update this post' });
+        }
+
+        if (isPinned !== undefined) {
+            if (isPinned && !isAdmin) {
+                return res.status(403).json({ error: 'Only admins can pin posts' });
+            }
+            post.isPinned = isPinned;
+            
+            if (isPinned) {
+                const importantCategory = await Category.findOne({ title: { $regex: /^important$/i } });
+                if (importantCategory) {
+                    post.category = importantCategory._id;
+                }
+            }
         }
 
         if (title) post.title = title;
         if (body) post.body = body;
         if (img !== undefined) {
-            if (img === '' || img === null) {
+            if ((img === '' || img === null) && !post.isPinned) {
                 return res.status(400).json({ error: 'Image is required and cannot be empty' });
             }
             post.img = img;
         }
+        if (images !== undefined) {
+            if ((!images || images.length === 0) && !post.isPinned) {
+                return res.status(400).json({ error: 'At least one image is required' });
+            }
+            post.images = images;
+        }
+        
+    
+        if (category && !post.isPinned) {
+            post.category = category;
+        }
 
         const updatedPost = await post.save();
-        await updatedPost.populate('user', 'firstName lastName email');
+        await updatedPost.populate([
+            { path: 'user', select: 'firstName lastName email' },
+            { path: 'category', select: 'title isActive' }
+        ]);
         
         res.json(updatedPost);
     } catch (error) {
+        console.error('Update post error:', error);
         res.status(500).json({ error: error.message });
     }
 };
@@ -333,8 +364,11 @@ const deletePost = async (req, res) => {
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
+    
+        const isOwner = post.user.toString() === req.user._id.toString();
+        const isAdmin = req.user.role === 'admin';
         
-        if (post.user.toString() !== req.user._id.toString()) {
+        if (!isOwner && !isAdmin) {
             return res.status(403).json({ error: 'Not authorized to delete this post' });
         }
         
@@ -460,7 +494,6 @@ const getAllPostsAdmin = async (req, res) => {
         const userId = req.user ? req.user._id : null;
         let filter = {};
         
-        // Filter by status if specified
         if (status === 'active') {
             filter.isActive = true;
         } else if (status === 'inactive') {
@@ -527,7 +560,7 @@ const togglePostStatus = async (req, res) => {
             return res.status(404).json({ error: 'Post not found' });
         }
         
-        const wasInactive = !post.isActive; // Check if post was inactive before toggle
+        const wasInactive = !post.isActive;
         post.isActive = !post.isActive;
         await post.save();
         
@@ -536,7 +569,7 @@ const togglePostStatus = async (req, res) => {
             { path: 'category', select: 'title isActive' }
         ]);
         
-        // Send approval email if post was just activated (approved)
+
         if (wasInactive && post.isActive) {
             try {
                 await sendPostApprovedEmail(
@@ -546,7 +579,6 @@ const togglePostStatus = async (req, res) => {
                 );
             } catch (emailError) {
                 console.error('Failed to send post approval email:', emailError);
-                // Don't fail the activation if email fails
             }
         }
         
@@ -563,7 +595,7 @@ const getPendingPosts = async (req, res) => {
     try {
         const { page = 1, limit = 6 } = req.query;
         const userId = req.user ? req.user._id : null;
-        let filter = { isActive: false }; // Only show inactive posts needing approval
+        let filter = { isActive: false };
         
         const pageNumber = parseInt(page);
         const limitNumber = parseInt(limit);
@@ -637,7 +669,6 @@ const approvePost = async (req, res) => {
             { path: 'category', select: 'title isActive' }
         ]);
 
-        // Send approval email to the post author
         try {
             await sendPostApprovedEmail(
                 post.user.email,
@@ -646,7 +677,6 @@ const approvePost = async (req, res) => {
             );
         } catch (emailError) {
             console.error('Failed to send post approval email:', emailError);
-            // Don't fail the approval if email fails
         }
         
         res.json({

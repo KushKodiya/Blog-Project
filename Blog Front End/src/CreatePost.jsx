@@ -202,7 +202,6 @@ function CreatePost({ user, onPostCreated }) {
         }
       });
       
-      // Show the message from the backend (different for admin vs regular user)
       toast.success(response.data.message || 'Post created successfully!');
       
       setFormData({ title: '', body: '', img: '', images: [], category: '', isPinned: false });

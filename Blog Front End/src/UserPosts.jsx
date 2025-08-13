@@ -156,7 +156,6 @@ function UserPosts({ user }) {
       
       toast.success('Post deleted successfully!');
       
-      // Refresh the posts list
       if (isAdmin) {
         fetchAllPosts();
       } else {
@@ -177,7 +176,6 @@ function UserPosts({ user }) {
       const newStatus = currentStatus ? 'deactivated' : 'activated';
       toast.success(`Post ${newStatus} successfully`);
       
-      // Refresh the posts list
       if (isAdmin) {
         fetchAllPosts();
       }
@@ -337,6 +335,12 @@ function UserPosts({ user }) {
 
                 <div className="post-actions">
                   <Link to={`/post/${post.slug || post._id}`} className="btn btn-secondary">View</Link>
+                  <Link 
+                    to={`/edit-post/${post._id}`} 
+                    className="btn btn-primary"
+                  >
+                    Edit
+                  </Link>
                   <button 
                     onClick={() => handleDeletePost(post._id)}
                     className="btn btn-danger"

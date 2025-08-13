@@ -35,7 +35,7 @@ const upload = multer({
 });
 
 const uploadSingle = upload.single('image');
-const uploadMultiple = upload.array('images', 10); // Allow up to 10 images
+const uploadMultiple = upload.array('images', 10);
 
 module.exports = {
     uploadSingle,

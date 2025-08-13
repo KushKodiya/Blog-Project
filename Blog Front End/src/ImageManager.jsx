@@ -4,11 +4,11 @@ import './ImageManager.css';
 const ImageManager = ({ images, imageItems, onRemove, onReorder }) => {
   const [draggedIndex, setDraggedIndex] = useState(null);
 
-  if (!images || images.length === 0) {
+  const itemsToRender = imageItems || images || [];
+
+  if (itemsToRender.length === 0) {
     return null;
   }
-
-  const itemsToRender = imageItems || images.map((img, index) => ({ id: index, preview: img }));
 
   const handleDragStart = (e, index) => {
     setDraggedIndex(index);
