@@ -235,18 +235,6 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
     return buttons;
   };
 
-  if (isLoading || (searchTerm.trim() && isSearching)) {
-    return (
-      <div className="main-content">
-        <div className="home-container">
-          <div className="loading">
-            {searchTerm.trim() ? 'Searching posts...' : 'Loading posts...'}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="main-content">
@@ -301,7 +289,11 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
             </div>
           )}
           
-          {currentPosts.length === 0 && !searchTerm ? (
+          {(isLoading || (searchTerm.trim() && isSearching)) ? (
+            <div className="loading">
+              {searchTerm.trim() ? 'Searching posts...' : 'Loading posts...'}
+            </div>
+          ) : currentPosts.length === 0 && !searchTerm ? (
             <div className="no-posts">
               <p>No posts found. {selectedCategory ? 'Try selecting a different category.' : 'Be the first to create one!'}</p>
             </div>
@@ -384,7 +376,7 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
         </div>
         
         {/* Pagination */}
-        {((!searchTerm && pagination.totalPages > 1) || (searchTerm && totalSearchPages > 1)) && (
+        {!isLoading && !(searchTerm.trim() && isSearching) && ((!searchTerm && pagination.totalPages > 1) || (searchTerm && totalSearchPages > 1)) && (
           <div className="pagination-container">
             <div className="pagination-info">
               {searchTerm ? (
