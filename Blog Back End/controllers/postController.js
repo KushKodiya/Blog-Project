@@ -407,7 +407,8 @@ const getPopularPosts = async (req, res) => {
         const popularPosts = await Post.aggregate([
             {
                 $match: {
-                    createdAt: { $gte: startDate }
+                    createdAt: { $gte: startDate },
+                    isActive: true
                 }
             },
             {

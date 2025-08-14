@@ -23,7 +23,10 @@ function PopularPosts({ user }) {
         `${API_BASE_URL}/api/posts/popular?period=${selectedPeriod}&limit=5`,
         { headers }
       );
-      setPopularPosts(response.data);
+      
+      // Filter out any inactive posts as an extra safety measure
+      const activePosts = response.data.filter(post => post.isActive !== false);
+      setPopularPosts(activePosts);
     } catch (error) {
       console.error('Failed to load popular posts:', error);
     } finally {
