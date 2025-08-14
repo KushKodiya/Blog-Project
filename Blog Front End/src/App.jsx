@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import { ThemeProvider } from './ThemeContext';
+import ThemeToggle from './ThemeToggle';
 import Home from './Home';
 import Login from './Login';
 import Signup from './Signup';
@@ -52,40 +54,42 @@ function App() {
   };
 
   return (
-    <Router>
-      <div className="App">
-        <nav className="navbar">
-          <div className="nav-container">
-            <Link to="/" className="nav-logo">
-              Blog
-            </Link>
-            <div className="nav-links">
-              <Link to="/">Home</Link>
-              {user ? (
-                <>
-                  <Link to="/create-post">Create Post</Link>
-                  <Link to="/your-posts">
-                    {(user.role?.toLowerCase() === 'admin') ? 'All Posts' : 'Your Posts'}
-                  </Link>
-                  {(user.role === 'admin' || user.role === 'Admin') && (
-                    <>
-                      <Link to="/manage-categories">Manage Categories</Link>
-                    </>
-                  )}
-                  <span className="user-greeting">Hello, {user.firstName}!</span>
-                  <button onClick={handleLogout} className="logout-btn">
-                    Logout
-                  </button>
-                </>
-              ) : (
-                <>
-                  <Link to="/login">Login</Link>
-                  <Link to="/signup">Sign Up</Link>
-                </>
-              )}
+    <ThemeProvider>
+      <Router>
+        <div className="App">
+          <nav className="navbar">
+            <div className="nav-container">
+              <Link to="/" className="nav-logo">
+                Blog
+              </Link>
+              <div className="nav-links">
+                <Link to="/">Home</Link>
+                {user ? (
+                  <>
+                    <Link to="/create-post">Create Post</Link>
+                    <Link to="/your-posts">
+                      {(user.role?.toLowerCase() === 'admin') ? 'All Posts' : 'Your Posts'}
+                    </Link>
+                    {(user.role === 'admin' || user.role === 'Admin') && (
+                      <>
+                        <Link to="/manage-categories">Manage Categories</Link>
+                      </>
+                    )}
+                    <span className="user-greeting">Hello, {user.firstName}!</span>
+                    <button onClick={handleLogout} className="logout-btn">
+                      Logout
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <Link to="/login">Login</Link>
+                    <Link to="/signup">Sign Up</Link>
+                  </>
+                )}
+                <ThemeToggle />
+              </div>
             </div>
-          </div>
-        </nav>
+          </nav>
 
         <main className="main-content">
           {isLoading ? (
@@ -161,6 +165,7 @@ function App() {
         />
       </div>
     </Router>
+    </ThemeProvider>
   );
 }
 
