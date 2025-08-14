@@ -9,24 +9,25 @@
   max-height: 400px;
   object-fit: contain;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 8px var(--shadow, rgba(0, 0, 0, 0.1));
 }
 
 .image-carousel {
   width: 100%;
   max-width: 800px;
   margin: 15px auto;
-  background: #f8f9fa;
+  background: var(--bg-secondary, #f8f9fa);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px var(--shadow, rgba(0, 0, 0, 0.1));
+  border: 1px solid var(--border-color, #e9ecef);
 }
 
 .carousel-container {
   position: relative;
   display: flex;
   align-items: center;
-  background: #fff;
+  background: var(--card-bg, #fff);
 }
 
 .carousel-image-container {
@@ -84,13 +85,13 @@
   justify-content: space-between;
   align-items: center;
   padding: 15px 20px;
-  background: #e9ecef;
-  border-top: 1px solid #dee2e6;
+  background: var(--bg-secondary, #e9ecef);
+  border-top: 1px solid var(--border-color, #dee2e6);
 }
 
 .image-counter {
   font-weight: 600;
-  color: #495057;
+  color: var(--text-primary, #495057);
   font-size: 14px;
 }
 
@@ -104,18 +105,18 @@
   height: 12px;
   border-radius: 50%;
   border: none;
-  background: #cbd3da;
+  background: var(--border-color, #cbd3da);
   cursor: pointer;
   transition: background 0.3s ease, transform 0.2s ease;
 }
 
 .carousel-dot:hover {
-  background: #6c757d;
+  background: var(--text-secondary, #6c757d);
   transform: scale(1.1);
 }
 
 .carousel-dot.active {
-  background: #007bff;
+  background: var(--accent-color, #007bff);
   transform: scale(1.2);
 }
 
@@ -123,10 +124,10 @@
   display: flex;
   gap: 10px;
   padding: 15px;
-  background: #f8f9fa;
+  background: var(--bg-secondary, #f8f9fa);
   justify-content: center;
   flex-wrap: wrap;
-  border-top: 1px solid #dee2e6;
+  border-top: 1px solid var(--border-color, #dee2e6);
 }
 
 .thumbnail {
@@ -142,14 +143,14 @@
 }
 
 .thumbnail:hover {
-  border-color: #6c757d;
+  border-color: var(--text-secondary, #6c757d);
   transform: scale(1.05);
 }
 
 .thumbnail.active {
-  border-color: #007bff;
+  border-color: var(--accent-color, #007bff);
   transform: scale(1.1);
-  box-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+  box-shadow: 0 0 10px rgba(13, 110, 253, 0.3);
 }
 
 .thumbnail img {

@@ -1,9 +1,9 @@
 .image-manager {
   margin: 15px 0;
   padding: 20px;
-  border: 2px dashed #dee2e6;
+  border: 2px dashed var(--border-color);
   border-radius: 8px;
-  background: #f8f9fa;
+  background: var(--card-background);
 }
 
 .image-manager-header {
@@ -12,13 +12,13 @@
 }
 
 .image-manager-header h4 {
-  color: #495057;
+  color: var(--text-color);
   margin: 0 0 5px 0;
   font-size: 1.1rem;
 }
 
 .image-manager-hint {
-  color: #6c757d;
+  color: var(--text-secondary);
   font-size: 0.85rem;
   margin: 0;
 }
@@ -42,7 +42,7 @@
 
 .image-manager-item:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: var(--box-shadow-hover);
 }
 
 .image-manager-item.dragging {
@@ -54,10 +54,10 @@
   position: relative;
   width: 100%;
   height: 120px;
-  background: #fff;
+  background: var(--background-color);
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--box-shadow);
 }
 
 .image-manager-preview img {
@@ -144,7 +144,7 @@
 }
 
 .add-image-btn:disabled {
-  background: #6c757d;
+  background: var(--text-secondary);
   cursor: not-allowed;
 }
 
@@ -157,7 +157,7 @@
 }
 
 .image-preview-section h4 {
-  color: #495057;
+  color: var(--text-color);
   margin-bottom: 15px;
   font-size: 1.1rem;
 }
