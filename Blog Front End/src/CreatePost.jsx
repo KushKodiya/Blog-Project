@@ -316,7 +316,7 @@ function CreatePost({ user, onPostCreated }) {
             />
           )}
           
-          {imageItems.length > 0 && (
+          {imageItems.length > 1 && (
             <div className="image-preview-section">
               <h4>Preview:</h4>
               <ImageCarousel 
