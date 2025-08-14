@@ -15,7 +15,17 @@ function CommentSection({ postId, user, onCommentCountChange }) {
   const [currentTime, setCurrentTime] = useState(Date.now());
 
   useEffect(() => {
-    fetchComments();
+    if (postId) {
+      // Reset comments when postId changes
+      setComments([]);
+      setNewComment('');
+      setReplyingTo(null);
+      setReplyText('');
+      setEditingComment(null);
+      setEditText('');
+      
+      fetchComments();
+    }
   }, [postId]);
 
   useEffect(() => {
@@ -24,6 +34,18 @@ function CommentSection({ postId, user, onCommentCountChange }) {
     }, 60000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  // Cleanup function to reset state when component unmounts
+  useEffect(() => {
+    return () => {
+      setComments([]);
+      setNewComment('');
+      setReplyingTo(null);
+      setReplyText('');
+      setEditingComment(null);
+      setEditText('');
+    };
   }, []);
 
   const countAllComments = (commentsList) => {
@@ -49,12 +71,18 @@ function CommentSection({ postId, user, onCommentCountChange }) {
       const token = localStorage.getItem('token');
       const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
       
+      console.log('Fetching comments for postId:', postId);
       const response = await axios.get(`${API_BASE_URL}/api/comments/post/${postId}`, { headers });
-      const commentsData = response.data.comments || [];
+      console.log('Comments API response:', response.data);
+      
+      const commentsData = response.data.comments || response.data || [];
+      console.log('Parsed comments data:', commentsData);
+      
       setComments(commentsData);
       updateCommentCount(commentsData);
     } catch (error) {
       console.error('Error fetching comments:', error);
+      console.error('Error response:', error.response?.data);
     } finally {
       setIsLoading(false);
     }

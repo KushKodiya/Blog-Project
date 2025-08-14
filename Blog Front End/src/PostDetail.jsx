@@ -103,6 +103,7 @@ function PostDetail({ user }) {
         </div>
 
         <CommentSection 
+          key={post._id}
           postId={post._id} 
           user={user} 
           onCommentCountChange={handleCommentCountChange}

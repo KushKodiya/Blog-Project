@@ -61,6 +61,7 @@ const createComment = async (req, res) => {
 const getCommentsByPost = async (req, res) => {
     try {
         const { postId } = req.params;
+        const userId = req.user ? req.user._id : null;
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
         const skip = (page - 1) * limit;
@@ -93,7 +94,9 @@ const getCommentsByPost = async (req, res) => {
 
         const commentsWithLikes = commentsWithReplies.map(comment => {
             if (userId) {
-                comment.isLiked = comment.likes.some(likeId => likeId.toString() === userId.toString());
+                comment.isLiked = comment.likes && comment.likes.some(likeId => likeId.toString() === userId.toString());
+            } else {
+                comment.isLiked = false;
             }
             
             if (comment.replies && comment.replies.length > 0) {
@@ -101,6 +104,8 @@ const getCommentsByPost = async (req, res) => {
                     const replyObj = reply.toObject ? reply.toObject() : reply;
                     if (userId) {
                         replyObj.isLiked = reply.likes && reply.likes.some(likeId => likeId.toString() === userId.toString());
+                    } else {
+                        replyObj.isLiked = false;
                     }
                     return replyObj;
                 });
