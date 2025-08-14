@@ -5,6 +5,7 @@ import { API_BASE_URL } from './config';
 import LikeButton from './LikeButton';
 import CommentSection from './CommentSection';
 import ImageCarousel from './ImageCarousel';
+import ShareButton from './ShareButton';
 
 function PostDetail({ user }) {
   const { slug } = useParams();
@@ -100,6 +101,7 @@ function PostDetail({ user }) {
             </svg>
             <span className="stat-count">{commentsCount}</span>
           </div>
+          <ShareButton post={post} />
         </div>
 
         <CommentSection 

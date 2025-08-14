@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_BASE_URL } from './config';
 import LikeButton from './LikeButton';
 import ImageCarousel from './ImageCarousel';
+import ShareButton from './ShareButton';
 
 function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
   const [posts, setPosts] = useState([]);
@@ -375,6 +376,7 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
                       <span className="stat-count">{post.commentsCount || 0}</span>
                     </div>
                   </Link>
+                  <ShareButton post={post} />
                 </div>
               </div>
             ))
