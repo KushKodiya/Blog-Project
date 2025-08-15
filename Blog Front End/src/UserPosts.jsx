@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { toast } from 'react-toastify';
@@ -31,6 +31,8 @@ function UserPosts({ user }) {
     hasPrevPage: false,
     limit: 6
   });
+  const [openDropdown, setOpenDropdown] = useState(null);
+  const dropdownRef = useRef(null);
   const postsPerPage = 6;
   
   const isAdmin = React.useMemo(() => {
@@ -70,9 +72,34 @@ function UserPosts({ user }) {
     }
   }, [posts, searchTerm, selectedCategory]);
 
+  // Update main pagination when posts array changes (e.g., after deletion)
+  useEffect(() => {
+    setPagination(prevPagination => ({
+      ...prevPagination,
+      totalPages: Math.ceil(posts.length / postsPerPage) || 1,
+      totalPosts: posts.length,
+      hasNextPage: posts.length > postsPerPage,
+      hasPrevPage: prevPagination.currentPage > 1
+    }));
+  }, [posts]);
+
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedCategory]);
+
+  // Handle clicking outside dropdown to close it
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setOpenDropdown(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Update pagination when filtered posts change
   useEffect(() => {
@@ -312,6 +339,10 @@ function UserPosts({ user }) {
     }
   };
 
+  const toggleDropdown = (postId) => {
+    setOpenDropdown(openDropdown === postId ? null : postId);
+  };
+
   const renderPagination = () => {
     const isFiltered = searchTerm.trim() || selectedCategory;
     const currentPagination = isFiltered ? filteredPagination : pagination;
@@ -523,31 +554,66 @@ function UserPosts({ user }) {
                         <span className="stat-count">{post.commentsCount || 0}</span>
                       </div>
                     </Link>
-                  </div>
-                </div>
-
-                <div className="post-actions">
-                  <Link to={`/post/${post.slug || post._id}`} className="btn btn-secondary">View</Link>
-                  <Link 
-                    to={`/edit-post/${post._id}`} 
-                    className="btn btn-primary"
-                  >
-                    Edit
-                  </Link>
-                  <button 
-                    onClick={() => handleDeletePost(post._id)}
-                    className="btn btn-danger"
-                  >
-                    Delete
-                  </button>
-                  {isAdmin && (
-                    <button 
-                      onClick={() => handleTogglePostStatus(post._id, post.isActive)}
-                      className={`btn ${post.isActive ? 'btn-warning' : 'btn-success'}`}
+                    
+                    {/* Actions Dropdown */}
+                    <div 
+                      className="post-actions-dropdown" 
+                      ref={openDropdown === post._id ? dropdownRef : null}
                     >
-                      {post.isActive ? 'Deactivate' : 'Activate'}
-                    </button>
-                  )}
+                      <button 
+                        className="dropdown-toggle"
+                        onClick={() => toggleDropdown(post._id)}
+                      >
+                        <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
+                        </svg>
+                        <span className="stat-count">Actions</span>
+                      </button>
+                      
+                      {openDropdown === post._id && (
+                        <div className="dropdown-menu">
+                          <Link to={`/post/${post.slug || post._id}`} className="dropdown-item">
+                            <svg className="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                            </svg>
+                            View
+                          </Link>
+                          <Link to={`/edit-post/${post._id}`} className="dropdown-item">
+                            <svg className="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+                            </svg>
+                            Edit
+                          </Link>
+                          <button 
+                            onClick={() => {
+                              handleDeletePost(post._id);
+                              setOpenDropdown(null);
+                            }}
+                            className="dropdown-item delete"
+                          >
+                            <svg className="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                            </svg>
+                            Delete
+                          </button>
+                          {isAdmin && (
+                            <button 
+                              onClick={() => {
+                                handleTogglePostStatus(post._id, post.isActive);
+                                setOpenDropdown(null);
+                              }}
+                              className="dropdown-item"
+                            >
+                              <svg className="dropdown-icon" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+                              </svg>
+                              {post.isActive ? 'Deactivate' : 'Activate'}
+                            </button>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
