@@ -66,8 +66,9 @@ function UserPosts({ user }) {
   useEffect(() => {
     if (!searchTerm.trim() && !selectedCategory) {
       setFilteredPosts(posts);
+      setCurrentPage(1); // Reset to first page when posts change
     }
-  }, [posts]);
+  }, [posts, searchTerm, selectedCategory]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -178,18 +179,26 @@ function UserPosts({ user }) {
 
   const updatePaginatedPosts = () => {
     const totalPosts = filteredPosts.length;
-    const totalPages = Math.ceil(totalPosts / postsPerPage);
-    const startIndex = (currentPage - 1) * postsPerPage;
+    const totalPages = Math.ceil(totalPosts / postsPerPage) || 1;
+    
+    // Ensure current page doesn't exceed total pages
+    let validCurrentPage = currentPage;
+    if (currentPage > totalPages) {
+      validCurrentPage = Math.max(1, totalPages);
+      setCurrentPage(validCurrentPage);
+    }
+    
+    const startIndex = (validCurrentPage - 1) * postsPerPage;
     const endIndex = startIndex + postsPerPage;
     const currentPagePosts = filteredPosts.slice(startIndex, endIndex);
 
     setPaginatedPosts(currentPagePosts);
     setFilteredPagination({
-      currentPage: currentPage,
+      currentPage: validCurrentPage,
       totalPages: totalPages,
       totalPosts: totalPosts,
-      hasNextPage: currentPage < totalPages,
-      hasPrevPage: currentPage > 1,
+      hasNextPage: validCurrentPage < totalPages,
+      hasPrevPage: validCurrentPage > 1,
       limit: postsPerPage
     });
   };
@@ -297,7 +306,10 @@ function UserPosts({ user }) {
   };
 
   const handlePageChange = (newPage) => {
-    setCurrentPage(newPage);
+    // Simple validation - just check if it's a positive number
+    if (newPage >= 1) {
+      setCurrentPage(newPage);
+    }
   };
 
   const renderPagination = () => {
@@ -316,7 +328,7 @@ function UserPosts({ user }) {
           <button
             key={i}
             onClick={() => handlePageChange(i)}
-            className={`page-number ${i === currentPagination.currentPage ? 'active' : ''}`}
+            className={`page-number ${i === currentPage ? 'active' : ''}`}
           >
             {i}
           </button>
@@ -330,16 +342,16 @@ function UserPosts({ user }) {
           {showPageNumbers && (
             <div className="page-numbers">
               <button
-                onClick={() => handlePageChange(currentPagination.currentPage - 1)}
-                disabled={!currentPagination.hasPrevPage}
+                onClick={() => handlePageChange(currentPage - 1)}
+                disabled={currentPage <= 1}
                 className="page-number"
               >
                 Previous
               </button>
               {pages}
               <button
-                onClick={() => handlePageChange(currentPagination.currentPage + 1)}
-                disabled={!currentPagination.hasNextPage}
+                onClick={() => handlePageChange(currentPage + 1)}
+                disabled={currentPage >= currentPagination.totalPages}
                 className="page-number"
               >
                 Next
@@ -348,7 +360,7 @@ function UserPosts({ user }) {
           )}
           <div className="page-info">
             {showPageNumbers ? (
-              <>Page {currentPagination.currentPage} of {currentPagination.totalPages} ({currentPagination.totalPosts} total {isFiltered ? 'filtered ' : ''}posts)</>
+              <>Page {currentPage} of {currentPagination.totalPages} ({currentPagination.totalPosts} total {isFiltered ? 'filtered ' : ''}posts)</>
             ) : (
               <>{currentPagination.totalPosts} {isFiltered ? 'filtered ' : ''}post{currentPagination.totalPosts !== 1 ? 's' : ''}</>
             )}
@@ -380,7 +392,13 @@ function UserPosts({ user }) {
         <h1>{isAdmin ? 'All Posts' : 'Your Posts'}</h1>
         <p>
           {pagination.totalPosts > 0 
-            ? `Showing ${filteredPosts.length} of ${pagination.totalPosts} post${pagination.totalPosts !== 1 ? 's' : ''}` 
+            ? (() => {
+                const isFiltered = searchTerm.trim() || selectedCategory;
+                const currentPagination = isFiltered ? filteredPagination : pagination;
+                const startIndex = ((currentPagination.currentPage - 1) * postsPerPage) + 1;
+                const endIndex = Math.min(currentPagination.currentPage * postsPerPage, currentPagination.totalPosts);
+                return `Showing ${startIndex} to ${endIndex} of ${currentPagination.totalPosts} post${currentPagination.totalPosts !== 1 ? 's' : ''}`;
+              })()
             : 'No posts found'
           }
         </p>
@@ -467,17 +485,23 @@ function UserPosts({ user }) {
                   </div>
                 </div>
                 
-                {post.img && (
-                  <div className="post-image">
-                    <img 
-                      src={`${API_BASE_URL}${post.img}`} 
-                      alt={post.title}
-                      onError={(e) => {
-                        e.target.style.display = 'none';
-                      }}
-                    />
-                  </div>
-                )}
+                <div className="post-image">
+                  <img 
+                    src={post.img ? `${API_BASE_URL}${post.img}` : '/dummy-post-image.svg'} 
+                    alt={post.title}
+                    className={!post.img ? 'dummy-image' : ''}
+                    onError={(e) => {
+                      // If the actual image fails to load, try the dummy image
+                      if (post.img && e.target.src !== '/dummy-post-image.svg') {
+                        e.target.src = '/dummy-post-image.svg';
+                        e.target.classList.add('dummy-image');
+                      } else if (!post.img && e.target.src !== '/dummy-post-image.svg') {
+                        e.target.src = '/dummy-post-image.svg';
+                        e.target.classList.add('dummy-image');
+                      }
+                    }}
+                  />
+                </div>
                 
                 <div className="post-body">
                   <p>{post.body.length > 150 ? post.body.substring(0, 150) + '...' : post.body}</p>

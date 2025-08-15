@@ -16,6 +16,15 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
+/* Ensure all links have no underlines by default */
+a {
+  text-decoration: none !important;
+}
+
+a:hover, a:visited, a:active, a:focus {
+  text-decoration: none !important;
+}
+
 .App {
   min-height: 100vh;
 }
@@ -1027,13 +1036,31 @@ body {
 }
 
 .user-post-card .post-header h3 a {
-  text-decoration: none;
+  text-decoration: none !important;
   color: inherit;
   transition: color 0.3s ease;
 }
 
 .user-post-card .post-header h3 a:hover {
   color: var(--accent-color);
+  text-decoration: none !important;
+}
+
+/* Additional rules to remove underlines from Link components in post headers */
+.user-post-card .post-header a {
+  text-decoration: none !important;
+}
+
+.user-post-card .post-header a:hover {
+  text-decoration: none !important;
+}
+
+.user-post-card .post-header a:visited {
+  text-decoration: none !important;
+}
+
+.user-post-card .post-header a:active {
+  text-decoration: none !important;
 }
 
 .user-post-card .post-meta {
@@ -2639,7 +2666,7 @@ body {
   --bg-primary: #ffffff;
   --bg-secondary: #f8f9fa;
   --text-primary: #333333;
-  --text-secondary: #6c757d;
+   --text-secondary: #6c757d;
   --border-color: #e9ecef;
   --shadow: rgba(0, 0, 0, 0.1);
   --card-bg: #ffffff;
