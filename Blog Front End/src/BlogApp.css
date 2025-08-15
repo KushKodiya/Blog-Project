@@ -1145,9 +1145,23 @@ a:hover, a:visited, a:active, a:focus {
   left: 100%;
 }
 
-.modern-stat-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+/* Styling for commented state - when user has commented on the post */
+.modern-stat-item.comments.commented {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, rgba(22, 163, 74, 0.12) 100%);
+  color: #16a34a;
+  border-color: rgba(34, 197, 94, 0.2);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.1);
+}
+
+.comment-link.commented .modern-stat-item.comments.commented {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2) 0%, rgba(22, 163, 74, 0.15) 100%);
+}
+
+.comment-link.commented:hover .modern-stat-item.comments.commented {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(22, 163, 74, 0.18) 100%);
+  color: #15803d;
+  border-color: rgba(34, 197, 94, 0.25);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.2);
 }
 
 .modern-stat-item .stat-icon {

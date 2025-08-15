@@ -150,9 +150,12 @@ const getAllPosts = async (req, res) => {
             
             if (userId) {
                 const userLike = await Like.findOne({ user: userId, post: post._id });
+                const userComment = await Comment.findOne({ user: userId, post: post._id });
                 postObj.isLiked = !!userLike;
+                postObj.hasCommented = !!userComment;
             } else {
                 postObj.isLiked = false;
+                postObj.hasCommented = false;
             }
             
             return postObj;
@@ -206,7 +209,9 @@ const getUserPosts = async (req, res) => {
             postObj.commentsCount = commentsCount;
             
             const userLike = await Like.findOne({ user: userId, post: post._id });
+            const userComment = await Comment.findOne({ user: userId, post: post._id });
             postObj.isLiked = !!userLike;
+            postObj.hasCommented = !!userComment;
             
             return postObj;
         }));

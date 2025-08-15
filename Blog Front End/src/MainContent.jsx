@@ -360,8 +360,8 @@ function MainContent({ user, selectedCategory, searchTerm, onSearchChange }) {
                     initialIsLiked={post.isLiked}
                     user={user}
                   />
-                  <Link to={`/post/${post.slug || post._id}`} className="comment-link">
-                    <div className="comment-count modern-stat-item comments">
+                  <Link to={`/post/${post.slug || post._id}`} className={`comment-link ${post.hasCommented ? 'commented' : ''}`}>
+                    <div className={`comment-count modern-stat-item comments ${post.hasCommented ? 'commented' : ''}`}>
                       <svg className="stat-icon" viewBox="0 0 24 24" fill="currentColor">
                         <path d="M21 6h-2v9H6v2c0 .55.45 1 1 1h11l4 4V7c0-.55-.45-1-1-1zm-4 6V3c0-.55-.45-1-1-1H3c-.55 0-1 .45-1 1v14l4-4h11c.55 0 1-.45 1-1z"/>
                       </svg>
