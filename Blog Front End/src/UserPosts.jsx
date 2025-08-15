@@ -7,6 +7,11 @@ import LikeButton from './LikeButton';
 
 function UserPosts({ user }) {
   const [posts, setPosts] = useState([]);
+  const [filteredPosts, setFilteredPosts] = useState([]);
+  const [paginatedPosts, setPaginatedPosts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [pagination, setPagination] = useState({
@@ -18,6 +23,15 @@ function UserPosts({ user }) {
     limit: 6
   });
   const [currentPage, setCurrentPage] = useState(1);
+  const [filteredPagination, setFilteredPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalPosts: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
+    limit: 6
+  });
+  const postsPerPage = 6;
   
   const isAdmin = React.useMemo(() => {
     if (!user) return false;
@@ -33,15 +47,45 @@ function UserPosts({ user }) {
         fetchUserPosts();
       }
     }
-  }, [user, isAdmin, currentPage]);
+  }, [user, isAdmin]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  // Debounced filter effect
+  useEffect(() => {
+    const debounceTimer = setTimeout(() => {
+      filterPosts();
+    }, 300);
+
+    return () => clearTimeout(debounceTimer);
+  }, [posts, searchTerm, selectedCategory]);
+
+  // Initialize filteredPosts when posts change and no filters are active
+  useEffect(() => {
+    if (!searchTerm.trim() && !selectedCategory) {
+      setFilteredPosts(posts);
+    }
+  }, [posts]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
+
+  // Update pagination when filtered posts change
+  useEffect(() => {
+    updatePaginatedPosts();
+  }, [filteredPosts, currentPage]);
 
   const fetchUserPosts = async () => {
     try {
       setIsLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
+      // Fetch all posts for client-side filtering and pagination
       const response = await axios.get(
-        `${API_BASE_URL}/api/posts/user/my-posts?page=${currentPage}&limit=6`,
+        `${API_BASE_URL}/api/posts/user/my-posts?page=1&limit=1000`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -49,7 +93,15 @@ function UserPosts({ user }) {
         }
       );
       setPosts(response.data.posts || []);
-      setPagination(response.data.pagination || {});
+      // For initial state when no filtering
+      setPagination({
+        currentPage: 1,
+        totalPages: Math.ceil((response.data.posts || []).length / postsPerPage),
+        totalPosts: (response.data.posts || []).length,
+        hasNextPage: (response.data.posts || []).length > postsPerPage,
+        hasPrevPage: false,
+        limit: postsPerPage
+      });
     } catch (error) {
       console.error('Error fetching user posts:', error);
       setError('Failed to load your posts');
@@ -64,8 +116,9 @@ function UserPosts({ user }) {
       setIsLoading(true);
       setError(null);
       const token = localStorage.getItem('token');
+      // Fetch all posts for client-side filtering and pagination
       const response = await axios.get(
-        `${API_BASE_URL}/api/posts/admin/all?page=${currentPage}&limit=6`,
+        `${API_BASE_URL}/api/posts/admin/all?page=1&limit=1000`,
         {
           headers: {
             Authorization: `Bearer ${token}`
@@ -73,7 +126,15 @@ function UserPosts({ user }) {
         }
       );
       setPosts(response.data.posts || []);
-      setPagination(response.data.pagination || {});
+      // For initial state when no filtering
+      setPagination({
+        currentPage: 1,
+        totalPages: Math.ceil((response.data.posts || []).length / postsPerPage),
+        totalPosts: (response.data.posts || []).length,
+        hasNextPage: (response.data.posts || []).length > postsPerPage,
+        hasPrevPage: false,
+        limit: postsPerPage
+      });
     } catch (error) {
       console.error('Error fetching admin posts:', error);
       setError('Failed to load posts');
@@ -81,6 +142,56 @@ function UserPosts({ user }) {
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const response = await axios.get(`${API_BASE_URL}/api/categories/active`);
+      setCategories(response.data);
+    } catch (error) {
+      console.error('Failed to fetch categories:', error);
+    }
+  };
+
+  const filterPosts = () => {
+    let filtered = posts;
+
+    // Filter by search term
+    if (searchTerm.trim()) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(post => 
+        post.title.toLowerCase().includes(searchLower) ||
+        post.body.toLowerCase().includes(searchLower) ||
+        (post.category && post.category.title.toLowerCase().includes(searchLower))
+      );
+    }
+
+    // Filter by category
+    if (selectedCategory) {
+      filtered = filtered.filter(post => 
+        post.category && post.category._id === selectedCategory
+      );
+    }
+
+    setFilteredPosts(filtered);
+  };
+
+  const updatePaginatedPosts = () => {
+    const totalPosts = filteredPosts.length;
+    const totalPages = Math.ceil(totalPosts / postsPerPage);
+    const startIndex = (currentPage - 1) * postsPerPage;
+    const endIndex = startIndex + postsPerPage;
+    const currentPagePosts = filteredPosts.slice(startIndex, endIndex);
+
+    setPaginatedPosts(currentPagePosts);
+    setFilteredPagination({
+      currentPage: currentPage,
+      totalPages: totalPages,
+      totalPosts: totalPosts,
+      hasNextPage: currentPage < totalPages,
+      hasPrevPage: currentPage > 1,
+      limit: postsPerPage
+    });
   };
 
   const formatDate = (dateString) => {
@@ -156,11 +267,8 @@ function UserPosts({ user }) {
       
       toast.success('Post deleted successfully!');
       
-      if (isAdmin) {
-        fetchAllPosts();
-      } else {
-        setPosts(posts.filter(post => post._id !== postId));
-      }
+      // Update posts by removing the deleted post
+      setPosts(posts.filter(post => post._id !== postId));
     } catch (error) {
       toast.error('Failed to delete post. Please try again.');
     }
@@ -176,9 +284,12 @@ function UserPosts({ user }) {
       const newStatus = currentStatus ? 'deactivated' : 'activated';
       toast.success(`Post ${newStatus} successfully`);
       
-      if (isAdmin) {
-        fetchAllPosts();
-      }
+      // Update the post status in the posts array
+      setPosts(posts.map(post => 
+        post._id === postId 
+          ? { ...post, isActive: !currentStatus }
+          : post
+      ));
     } catch (error) {
       console.error('Error toggling post status:', error);
       toast.error(error.response?.data?.error || 'Failed to update post status');
@@ -190,44 +301,57 @@ function UserPosts({ user }) {
   };
 
   const renderPagination = () => {
-    if (pagination.totalPages <= 1) return null;
+    const isFiltered = searchTerm.trim() || selectedCategory;
+    const currentPagination = isFiltered ? filteredPagination : pagination;
+    
+    // Always show pagination info if we have posts, only hide navigation if single page
+    if (currentPagination.totalPosts === 0) return null;
 
     const pages = [];
-    for (let i = 1; i <= pagination.totalPages; i++) {
-      pages.push(
-        <button
-          key={i}
-          onClick={() => handlePageChange(i)}
-          className={`page-number ${i === pagination.currentPage ? 'active' : ''}`}
-        >
-          {i}
-        </button>
-      );
+    const showPageNumbers = currentPagination.totalPages > 1;
+    
+    if (showPageNumbers) {
+      for (let i = 1; i <= currentPagination.totalPages; i++) {
+        pages.push(
+          <button
+            key={i}
+            onClick={() => handlePageChange(i)}
+            className={`page-number ${i === currentPagination.currentPage ? 'active' : ''}`}
+          >
+            {i}
+          </button>
+        );
+      }
     }
 
     return (
       <div className="pagination">
         <div className="pagination-info">
-          <div className="page-numbers">
-            <button
-              onClick={() => handlePageChange(pagination.currentPage - 1)}
-              disabled={!pagination.hasPrevPage}
-              className="page-number"
-            >
-              Previous
-            </button>
-            {pages}
-            <button
-              onClick={() => handlePageChange(pagination.currentPage + 1)}
-              disabled={!pagination.hasNextPage}
-              className="page-number"
-            >
-              Next
-            </button>
-          </div>
+          {showPageNumbers && (
+            <div className="page-numbers">
+              <button
+                onClick={() => handlePageChange(currentPagination.currentPage - 1)}
+                disabled={!currentPagination.hasPrevPage}
+                className="page-number"
+              >
+                Previous
+              </button>
+              {pages}
+              <button
+                onClick={() => handlePageChange(currentPagination.currentPage + 1)}
+                disabled={!currentPagination.hasNextPage}
+                className="page-number"
+              >
+                Next
+              </button>
+            </div>
+          )}
           <div className="page-info">
-            Page {pagination.currentPage} of {pagination.totalPages} 
-            ({pagination.totalPosts} total posts)
+            {showPageNumbers ? (
+              <>Page {currentPagination.currentPage} of {currentPagination.totalPages} ({currentPagination.totalPosts} total {isFiltered ? 'filtered ' : ''}posts)</>
+            ) : (
+              <>{currentPagination.totalPosts} {isFiltered ? 'filtered ' : ''}post{currentPagination.totalPosts !== 1 ? 's' : ''}</>
+            )}
           </div>
         </div>
       </div>
@@ -256,22 +380,67 @@ function UserPosts({ user }) {
         <h1>{isAdmin ? 'All Posts' : 'Your Posts'}</h1>
         <p>
           {pagination.totalPosts > 0 
-            ? `Showing ${posts.length} of ${pagination.totalPosts} post${pagination.totalPosts !== 1 ? 's' : ''}` 
+            ? `Showing ${filteredPosts.length} of ${pagination.totalPosts} post${pagination.totalPosts !== 1 ? 's' : ''}` 
             : 'No posts found'
           }
         </p>
+        
+        {/* Search and Filter Controls */}
+        <div className="posts-controls">
+          <div className="search-input-wrapper">
+            <svg className="search-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+            </svg>
+            <input
+              type="text"
+              placeholder="Search by title, content, or category..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="search-input"
+            />
+            {searchTerm && (
+              <button 
+                className="clear-search" 
+                onClick={() => setSearchTerm('')}
+                type="button"
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>
+                </svg>
+              </button>
+            )}
+          </div>
+          
+          <select
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+            className="category-select"
+          >
+            <option value="">All Categories</option>
+            {categories.map(category => (
+              <option key={category._id} value={category._id}>
+                {category.title}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
-      {posts.length === 0 ? (
+      {filteredPosts.length === 0 ? (
         <div className="no-posts">
-          <p>{isAdmin ? 'No posts found.' : 'You haven\'t created any posts yet.'}</p>
-          {!isAdmin && (
+          <p>
+            {posts.length === 0 
+              ? (isAdmin ? 'No posts found.' : 'You haven\'t created any posts yet.')
+              : 'No posts match your current filters.'
+            }
+          </p>
+          {!isAdmin && posts.length === 0 && (
             <Link to="/create-post" className="btn btn-primary">Create Your First Post</Link>
           )}
         </div>
       ) : (
         <div className="posts-grid">
-          {posts.map(post => (
+          {paginatedPosts.map(post => (
             <div key={post._id} className="user-post-card">
               <div className="post-card-content">
                 <div className="post-header">
