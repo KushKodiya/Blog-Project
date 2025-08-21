@@ -13,25 +13,7 @@ function Signup({ onSignup }) {
   });
 
   const [errors, setErrors] = useState({});
-  const [touched, setTouched] = useState({});
-
-  const validateField = (name, value) => {
-    switch (name) {
-      case 'firstName':
-      case 'lastName':
-        return /^[A-Za-z]+$/.test(value) ? '' : 'Only letters are allowed';
-      case 'phone':
-        return /^\d{10}$/.test(value) ? '' : 'Must be exactly 10 digits';
-      case 'email':
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value) ? '' : 'Invalid email format';
-      case 'password':
-        return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,}$/.test(value)
-          ? ''
-          : 'Password must be at least 8 characters and contain uppercase, lowercase, number, and special character';
-      default:
-        return '';
-    }
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -40,57 +22,62 @@ function Signup({ onSignup }) {
       [name]: value
     }));
     
-    if (touched[name]) {
+    if (errors[name]) {
       setErrors(prev => ({
         ...prev,
-        [name]: validateField(name, value)
+        [name]: ''
       }));
     }
-  };
-
-  const handleBlur = (e) => {
-    const { name, value } = e.target;
-    setTouched(prev => ({
-      ...prev,
-      [name]: true
-    }));
-    setErrors(prev => ({
-      ...prev,
-      [name]: validateField(name, value)
-    }));
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const newErrors = {};
-    Object.keys(formData).forEach(key => {
-      newErrors[key] = validateField(key, formData[key]);
-    });
-    setErrors(newErrors);
-
-    if (Object.values(newErrors).every(error => error === '')) {
-      try {
-        const response = await axios.post(`${API_BASE_URL}/api/users/register`, formData);
-        
-        localStorage.setItem('token', response.data.token);
-        localStorage.setItem('user', JSON.stringify(response.data.user));
-        
-        toast.success('Account created successfully!');
-        
-        if (onSignup) {
-          onSignup(response.data.user, response.data.token);
-        }
-      } catch (error) {
-        toast.error(error.response?.data?.error || 'Failed to create account. Please try again.');
+    setIsLoading(true);
+    try {
+      const response = await axios.post(`${API_BASE_URL}/api/users/register`, formData);
+      
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+      
+      toast.success('Account created successfully!');
+      
+      if (onSignup) {
+        onSignup(response.data.user, response.data.token);
       }
+    } catch (error) {
+      let friendlyMessage = 'Something went wrong. Please try again.';
+      
+      const serverError = error.response?.data?.error;
+      if (serverError) {
+        // Make common server errors more user-friendly
+        if (serverError.includes('email') && serverError.includes('exists')) {
+          friendlyMessage = 'This email address is already registered. Please use a different email or try signing in instead.';
+        } else if (serverError.includes('validation') || serverError.includes('required')) {
+          friendlyMessage = 'Please fill in all required fields with valid information.';
+        } else if (serverError.includes('password')) {
+          friendlyMessage = 'Please create a stronger password with at least 8 characters.';
+        } else if (serverError.includes('email') && serverError.includes('invalid')) {
+          friendlyMessage = 'Please enter a valid email address.';
+        } else {
+          friendlyMessage = serverError;
+        }
+      }
+      
+      setErrors({ 
+        general: friendlyMessage
+      });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="signup-container">
-      <form onSubmit={handleSubmit} className="signup-form">
+      <form onSubmit={handleSubmit} className="signup-form" noValidate>
         <h2>Create Account</h2>
+        
+        {errors.general && <div className="error-message general-error">{errors.general}</div>}
         
         <div className="form-group">
           <label htmlFor="firstName">First Name</label>
@@ -100,11 +87,9 @@ function Signup({ onSignup }) {
             name="firstName"
             value={formData.firstName}
             onChange={handleChange}
-            onBlur={handleBlur}
             placeholder="Enter your first name"
-            className={errors.firstName && touched.firstName ? 'error' : ''}
+            disabled={isLoading}
           />
-          {errors.firstName && touched.firstName && <span className="error-message">{errors.firstName}</span>}
         </div>
 
         <div className="form-group">
@@ -115,11 +100,9 @@ function Signup({ onSignup }) {
             name="lastName"
             value={formData.lastName}
             onChange={handleChange}
-            onBlur={handleBlur}
             placeholder="Enter your last name"
-            className={errors.lastName && touched.lastName ? 'error' : ''}
+            disabled={isLoading}
           />
-          {errors.lastName && touched.lastName && <span className="error-message">{errors.lastName}</span>}
         </div>
 
         <div className="form-group">
@@ -130,11 +113,9 @@ function Signup({ onSignup }) {
             name="phone"
             value={formData.phone}
             onChange={handleChange}
-            onBlur={handleBlur}
             placeholder="Enter your phone number"
-            className={errors.phone && touched.phone ? 'error' : ''}
+            disabled={isLoading}
           />
-          {errors.phone && touched.phone && <span className="error-message">{errors.phone}</span>}
         </div>
 
         <div className="form-group">
@@ -145,11 +126,9 @@ function Signup({ onSignup }) {
             name="email"
             value={formData.email}
             onChange={handleChange}
-            onBlur={handleBlur}
             placeholder="Enter your email"
-            className={errors.email && touched.email ? 'error' : ''}
+            disabled={isLoading}
           />
-          {errors.email && touched.email && <span className="error-message">{errors.email}</span>}
         </div>
 
         <div className="form-group">
@@ -160,14 +139,14 @@ function Signup({ onSignup }) {
             name="password"
             value={formData.password}
             onChange={handleChange}
-            onBlur={handleBlur}
             placeholder="Create a password"
-            className={errors.password && touched.password ? 'error' : ''}
+            disabled={isLoading}
           />
-          {errors.password && touched.password && <span className="error-message">{errors.password}</span>}
         </div>
 
-        <button type="submit" className="btn btn-success">Sign Up</button>
+        <button type="submit" className="btn btn-success" disabled={isLoading}>
+          {isLoading ? 'Creating Account...' : 'Sign Up'}
+        </button>
       </form>
     </div>
   );

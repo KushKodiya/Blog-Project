@@ -27,31 +27,9 @@ function Login({ onLogin }) {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
-    }
-    
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    }
-    
-    return newErrors;
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
-
     setIsLoading(true);
     try {
       const response = await axios.post(`${API_BASE_URL}/api/users/login`, formData);
@@ -64,8 +42,24 @@ function Login({ onLogin }) {
       
       toast.success('Login successful!');
     } catch (error) {
+      let friendlyMessage = 'Something went wrong. Please try again.';
+      
+      const serverError = error.response?.data?.error;
+      if (serverError) {
+        // Make common server errors more user-friendly
+        if (serverError.includes('Invalid credentials') || serverError.includes('password') || serverError.includes('email')) {
+          friendlyMessage = 'Invalid email or password. Please check your credentials and try again.';
+        } else if (serverError.includes('User not found')) {
+          friendlyMessage = 'No account found with this email address. Please check your email or create a new account.';
+        } else if (serverError.includes('blocked') || serverError.includes('suspended')) {
+          friendlyMessage = 'Your account has been temporarily suspended. Please contact support.';
+        } else {
+          friendlyMessage = serverError;
+        }
+      }
+      
       setErrors({ 
-        general: error.response?.data?.error || 'Login failed. Please try again.' 
+        general: friendlyMessage
       });
     } finally {
       setIsLoading(false);
@@ -74,7 +68,7 @@ function Login({ onLogin }) {
 
   return (
     <div className="login-container">
-      <form onSubmit={handleSubmit} className="login-form">
+      <form onSubmit={handleSubmit} className="login-form" noValidate>
         <h2>Sign In</h2>
         
         {errors.general && <div className="error-message general-error">{errors.general}</div>}
@@ -88,10 +82,8 @@ function Login({ onLogin }) {
             value={formData.email}
             onChange={handleChange}
             placeholder="Enter your email"
-            className={errors.email ? 'error' : ''}
             disabled={isLoading}
           />
-          {errors.email && <span className="error-message">{errors.email}</span>}
         </div>
 
         <div className="form-group">
@@ -103,10 +95,8 @@ function Login({ onLogin }) {
             value={formData.password}
             onChange={handleChange}
             placeholder="Enter your password"
-            className={errors.password ? 'error' : ''}
             disabled={isLoading}
           />
-          {errors.password && <span className="error-message">{errors.password}</span>}
         </div>
 
         <button type="submit" className="btn btn-primary" disabled={isLoading}>
